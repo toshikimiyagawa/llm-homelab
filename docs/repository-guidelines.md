@@ -5,6 +5,7 @@
 ```text
 llm-homelab/
 ├── AGENTS.md
+├── CLAUDE.md -> AGENTS.md
 ├── README.md
 ├── LICENSE
 ├── ansible.cfg
@@ -81,7 +82,9 @@ refactor: split nvidia role into driver and toolkit
 ## ブランチ戦略
 
 - `main`: 常に動作する状態を維持する。
-- 大きな変更はfeatureブランチで作業し、PRでマージする。
+- すべての変更はfeatureブランチで作業し、`main`へ直接コミットしない。
+- マージするときは必ずPRを作成する。
+- PRのdescriptionは日本語で書く。
 - 1台運用なのでCI/CD自動デプロイはしない。
 - 本番適用は手動で`ansible-playbook`を実行する。
 
