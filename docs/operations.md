@@ -1,5 +1,18 @@
 # Operations
 
+## 現在の進捗
+
+2026-05-28時点:
+
+- Ubuntu 26.04 LTSインストール済み。
+- SSHログイン可能。
+- ホスト名は`llm01`に設定済み。
+- `/var/lib/rancher`と`/opt`のストレージ分離は設定済み。
+- GTX 1650のみ装着済み。
+- NVIDIAドライバ、k3s、Tailscale、監視、ワークロードは未構築。
+- RTX Pro 6000は未装着。2026-05-29または2026-05-30に装着予定。
+- 初期構築用に`toshiki ALL=(ALL) NOPASSWD: ALL`を一時設定中。構築完了後に削除または限定化する。
+
 ## 構築フロー
 
 ### Phase 0: 手動セットアップ
@@ -19,6 +32,27 @@ BIOS必須設定:
 - Above 4G Decoding: Enabled
 - Re-Size BAR Support: Enabled
 - IOMMU: Enabled
+
+### 構築前プリフライト
+
+Ansibleを流す前に、Mac側から以下を確認する。
+
+```bash
+ssh llm01 hostnamectl
+ssh llm01 findmnt /var/lib/rancher
+ssh llm01 findmnt /opt
+ssh llm01 mokutil --sb-state
+ssh llm01 'find /sys/kernel/iommu_groups -maxdepth 1 -type d | wc -l'
+ansible all -m ping
+```
+
+期待値:
+
+- ホスト名が`llm01`。
+- `/var/lib/rancher`と`/opt`が別ファイルシステムとしてマウント済み。
+- Secure Bootがdisabled。
+- IOMMUグループが作成されている。
+- Ansible pingが成功する。
 
 ### Phase 1: GTX 1650のみで構築
 
@@ -47,11 +81,24 @@ ansible-playbook playbooks/site.yml --skip-tags vllm
 2026-05-29または2026-05-30に装着予定。
 
 1. シャットダウンする。
-2. RTX Pro 6000を物理装着する。
-3. 起動する。
-4. `nvidia-smi`で両GPU認識を確認する。
-5. GPU UUIDを取得してinventoryに記録する。
-6. vLLMをデプロイする。
+2. 電源ケーブルを抜き、残留電荷を抜く。
+3. RTX Pro 6000をPCIe x16_1に装着する。
+4. GTX 1650がチップセット側スロットにあることを確認する。
+5. 12V-2x6純正ケーブルを挿し込み、急角度で曲がっていないことを確認する。
+6. 起動する。
+7. BIOSでSecure Boot、Above 4G Decoding、Re-Size BAR、IOMMUを再確認する。
+8. OS起動後に`lspci`と`nvidia-smi`で両GPU認識を確認する。
+9. GPU UUIDとPCIeリンク幅を取得してinventoryに記録する。
+10. vLLMをデプロイする。
+
+装着後の確認コマンド:
+
+```bash
+lspci -nn | grep -Ei 'vga|3d|display|nvidia'
+nvidia-smi
+nvidia-smi -L
+sudo lspci -vv -s <RTX_BUS_ID> | grep -E 'LnkCap|LnkSta'
+```
 
 ```bash
 ansible-playbook playbooks/site.yml --tags vllm
@@ -91,6 +138,17 @@ sudo nvidia-smi -i 1 -pl 600
 ```
 
 GPU indexは装着後に必ず確認する。固定値を安易に信用しない。
+
+## 初期構築後の後始末
+
+初期構築が安定したら、広すぎるpasswordless sudoを削除または限定化する。
+
+```bash
+sudo rm /etc/sudoers.d/codex
+sudo visudo -c
+```
+
+エージェントによる継続運用が必要な場合は、`NOPASSWD: ALL`ではなく、必要なコマンドだけに限定したsudoersへ置き換える。
 
 ## ヘルスチェック
 

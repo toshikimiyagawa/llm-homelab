@@ -29,12 +29,15 @@
   - `/`
   - `/var/lib/rancher`
   - `/opt`
+- 初期構築用に一時的なpasswordless sudoを設定中。構築完了後に削除または限定化する。
 
 ## 構築フェーズ
 
 ### Phase 0: 手動セットアップ
 
 Ubuntuをインストールし、SSHで接続できる状態にする。BIOSではSecure Bootを無効化し、Above 4G Decoding、Re-Size BAR、IOMMUを有効化する。
+
+現在、Ubuntuインストール、SSHログイン、ホスト名設定、ストレージ初期構成までは完了済み。
 
 ### Phase 1: GTX 1650のみで構築
 
