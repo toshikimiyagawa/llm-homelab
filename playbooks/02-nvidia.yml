@@ -1,0 +1,9 @@
+---
+- name: Install NVIDIA driver stack
+  hosts: llm_servers
+  gather_facts: true
+  roles:
+    - role: nvidia
+      tags:
+        - nvidia
+        - gpu

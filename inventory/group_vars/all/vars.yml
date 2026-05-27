@@ -40,3 +40,7 @@ base_packages:
   - smartmontools
   - unzip
   - vim
+
+nvidia_driver_package: nvidia-driver-575-open
+nvidia_effective_driver_branch: "580"
+nvidia_effective_driver_version_observed: 580.159.03

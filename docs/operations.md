@@ -11,7 +11,8 @@
 - GTX 1650のみ装着済み。
 - Ansible inventory、preflight、基本OS設定roleは作成済み。
 - 基本OS設定playbookは適用済み。timezone、ベースパッケージ、`/opt`配下のデータディレクトリをAnsible管理している。
-- NVIDIAドライバ、k3s、Tailscale、監視、ワークロードは未構築。
+- NVIDIA 575 open driver roleは作成済み、適用済み。Ubuntu 26.04では実ドライバ580.159.03として導入されている。
+- k3s、Tailscale、監視、ワークロードは未構築。
 - RTX Pro 6000は未装着。2026-05-29または2026-05-30に装着予定。
 - 初期構築用に`toshiki ALL=(ALL) NOPASSWD: ALL`を一時設定中。構築完了後に削除または限定化する。
 
@@ -61,6 +62,7 @@ ansible all -m ping
 ```bash
 ansible-playbook playbooks/00-bootstrap.yml
 ansible-playbook playbooks/01-system.yml
+ansible-playbook playbooks/02-nvidia.yml
 ansible-playbook playbooks/site.yml
 ```
 

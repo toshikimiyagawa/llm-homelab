@@ -1,0 +1,4 @@
+---
+nvidia_driver_package: nvidia-driver-575-open
+nvidia_install_kernel_headers: true
+nvidia_blacklist_nouveau: true

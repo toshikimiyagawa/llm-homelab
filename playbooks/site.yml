@@ -4,3 +4,6 @@
 
 - name: Apply base system configuration
   ansible.builtin.import_playbook: 01-system.yml
+
+- name: Install NVIDIA driver
+  ansible.builtin.import_playbook: 02-nvidia.yml

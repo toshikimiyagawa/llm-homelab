@@ -1,0 +1,44 @@
+---
+- name: Install current kernel headers
+  ansible.builtin.apt:
+    name: "linux-headers-{{ ansible_facts.kernel }}"
+    state: present
+  when: nvidia_install_kernel_headers
+
+- name: Blacklist nouveau driver
+  ansible.builtin.copy:
+    dest: /etc/modprobe.d/blacklist-nouveau.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      blacklist nouveau
+      options nouveau modeset=0
+  when: nvidia_blacklist_nouveau
+  notify: Update initramfs
+
+- name: Install NVIDIA open kernel driver
+  ansible.builtin.apt:
+    name: "{{ nvidia_driver_package }}"
+    state: present
+
+- name: Check whether reboot is required
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+  register: nvidia_reboot_required
+
+- name: Show reboot requirement
+  ansible.builtin.debug:
+    msg: "Reboot required before NVIDIA driver validation."
+  when: nvidia_reboot_required.stat.exists
+
+- name: Check nvidia-smi availability
+  ansible.builtin.command: nvidia-smi
+  register: nvidia_smi_result
+  changed_when: false
+  failed_when: false
+
+- name: Show nvidia-smi output when available
+  ansible.builtin.debug:
+    var: nvidia_smi_result.stdout_lines
+  when: nvidia_smi_result.rc == 0

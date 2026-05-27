@@ -15,8 +15,9 @@
 
 ## NVIDIA
 
-- ドライバ: 575系
-- CUDA: 12.9以降
+- 要求ドライバ: 575系open kernel module
+- 実機導入結果: Ubuntu 26.04の`nvidia-driver-575-open`は`nvidia-driver-580-open`へ依存するため、実ドライバは580.159.03
+- CUDA: 13.0（`nvidia-smi`表示）
 - Blackwell世代のため、オープンソースカーネルモジュールを前提にする。
 
 RTX Pro 6000装着後は、GPU UUIDをinventoryに記録する。

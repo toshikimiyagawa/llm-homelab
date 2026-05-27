@@ -31,6 +31,7 @@
   - `/opt`
 - Ansible inventory、preflight、基本OS設定roleを追加済み
 - 基本OS設定playbook適用済み
+- NVIDIA 575 open driver roleを追加し、適用済み。実ドライバは580.159.03
 - 初期構築用に一時的なpasswordless sudoを設定中。構築完了後に削除または限定化する。
 
 ## 構築フェーズ
