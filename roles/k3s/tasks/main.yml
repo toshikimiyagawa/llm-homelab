@@ -1,0 +1,61 @@
+---
+- name: Ensure k3s config directory exists
+  ansible.builtin.file:
+    path: "{{ k3s_config_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Write k3s config
+  ansible.builtin.copy:
+    dest: "{{ k3s_config_path }}"
+    owner: root
+    group: root
+    mode: "0600"
+    content: "{{ k3s_config | to_nice_yaml(indent=2, sort_keys=false) }}"
+  notify: Restart k3s
+
+- name: Download k3s install script
+  ansible.builtin.get_url:
+    url: "{{ k3s_install_url }}"
+    dest: "{{ k3s_install_script_path }}"
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Install k3s server
+  ansible.builtin.command: "{{ k3s_install_script_path }}"
+  args:
+    creates: /usr/local/bin/k3s
+  environment:
+    INSTALL_K3S_EXEC: server
+
+- name: Ensure k3s service is enabled and running
+  ansible.builtin.systemd:
+    name: k3s
+    enabled: true
+    state: started
+
+- name: Wait for Kubernetes node to become ready
+  ansible.builtin.command: k3s kubectl wait node/llm01 --for=condition=Ready --timeout=180s
+  register: k3s_node_ready
+  changed_when: false
+
+- name: Confirm NVIDIA runtime is present in k3s containerd config
+  ansible.builtin.command: grep -R nvidia /var/lib/rancher/k3s/agent/etc/containerd
+  register: k3s_nvidia_runtime
+  changed_when: false
+
+- name: Show NVIDIA runtime detection
+  ansible.builtin.debug:
+    var: k3s_nvidia_runtime.stdout_lines
+
+- name: Show Kubernetes nodes
+  ansible.builtin.command: k3s kubectl get nodes -o wide
+  register: k3s_nodes
+  changed_when: false
+
+- name: Print Kubernetes node status
+  ansible.builtin.debug:
+    var: k3s_nodes.stdout_lines

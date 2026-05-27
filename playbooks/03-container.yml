@@ -1,0 +1,9 @@
+---
+- name: Install NVIDIA container runtime integration
+  hosts: llm_servers
+  gather_facts: true
+  roles:
+    - role: container
+      tags:
+        - container
+        - nvidia-container-toolkit

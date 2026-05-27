@@ -1,0 +1,9 @@
+---
+- name: Install k3s single-node cluster
+  hosts: llm_servers
+  gather_facts: true
+  roles:
+    - role: k3s
+      tags:
+        - k3s
+        - kubernetes

@@ -8,10 +8,12 @@
 
 ## コンテナ・オーケストレーション
 
-- k3s（シングルノード）
-- containerd（k3s標準ランタイム）
-- NVIDIA Container Toolkit
+- k3s v1.35.5+k3s1（シングルノード）
+- containerd 2.2.3-k3s1（k3s標準ランタイム）
+- NVIDIA Container Toolkit 1.19.1
 - NVIDIA Device Plugin for Kubernetes
+
+k3sは公式install scriptでsystemd serviceとして導入する。設定は`/etc/rancher/k3s/config.yaml`に置き、install scriptの一時引数に依存しない。K3sは起動時に`nvidia-container-runtime`を自動検出する。
 
 ## NVIDIA
 

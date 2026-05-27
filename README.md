@@ -32,6 +32,8 @@
 - Ansible inventory、preflight、基本OS設定roleを追加済み
 - 基本OS設定playbook適用済み
 - NVIDIA 575 open driver roleを追加し、適用済み。実ドライバは580.159.03
+- NVIDIA Container Toolkit 1.19.1導入済み
+- k3s v1.35.5+k3s1導入済み。`llm01`はReady
 - 初期構築用に一時的なpasswordless sudoを設定中。構築完了後に削除または限定化する。
 
 ## 構築フェーズ
@@ -57,6 +59,7 @@ ansible-playbook playbooks/site.yml --skip-tags vllm
 - NVIDIAドライバ
 - containerd / k3s
 - NVIDIA Device Plugin
+- k3s
 - Tailscale
 - 監視基盤
 - Ollama
