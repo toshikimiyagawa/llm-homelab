@@ -34,6 +34,8 @@
 - NVIDIA 575 open driver roleを追加し、適用済み。実ドライバは580.159.03
 - NVIDIA Container Toolkit 1.19.1導入済み
 - k3s v1.35.5+k3s1導入済み。`llm01`はReady
+- NVIDIA Device Plugin 0.17.1導入済み。`llm01`は`nvidia.com/gpu: 1`を公開
+- Kubernetes上の一時Jobで`nvidia-smi`実行確認済み
 - 初期構築用に一時的なpasswordless sudoを設定中。構築完了後に削除または限定化する。
 
 ## 構築フェーズ

@@ -1,0 +1,73 @@
+---
+- name: Run temporary NVIDIA GPU smoke test
+  hosts: llm_servers
+  gather_facts: false
+  vars:
+    gpu_smoke_namespace: default
+    gpu_smoke_job_name: nvidia-smi-smoke
+    gpu_smoke_manifest_path: /tmp/nvidia-smi-smoke.yaml
+    gpu_smoke_image: nvidia/cuda:13.0.0-base-ubuntu24.04
+  tasks:
+    - name: Write NVIDIA GPU smoke test job manifest
+      ansible.builtin.copy:
+        dest: "{{ gpu_smoke_manifest_path }}"
+        owner: root
+        group: root
+        mode: "0600"
+        content: |
+          ---
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: {{ gpu_smoke_job_name }}
+            namespace: {{ gpu_smoke_namespace }}
+          spec:
+            backoffLimit: 0
+            template:
+              spec:
+                restartPolicy: Never
+                runtimeClassName: nvidia
+                containers:
+                  - name: nvidia-smi
+                    image: {{ gpu_smoke_image }}
+                    command:
+                      - nvidia-smi
+                    resources:
+                      limits:
+                        nvidia.com/gpu: 1
+
+    - name: Remove previous NVIDIA GPU smoke test job
+      ansible.builtin.command: >-
+        k3s kubectl -n {{ gpu_smoke_namespace }}
+        delete job {{ gpu_smoke_job_name }} --ignore-not-found=true
+      register: gpu_smoke_delete
+      changed_when: "'deleted' in gpu_smoke_delete.stdout"
+
+    - name: Apply NVIDIA GPU smoke test job
+      ansible.builtin.command: "k3s kubectl apply -f {{ gpu_smoke_manifest_path }}"
+      register: gpu_smoke_apply
+      changed_when: "'created' in gpu_smoke_apply.stdout or 'configured' in gpu_smoke_apply.stdout"
+
+    - name: Wait for NVIDIA GPU smoke test job to complete
+      ansible.builtin.command: >-
+        k3s kubectl -n {{ gpu_smoke_namespace }}
+        wait job/{{ gpu_smoke_job_name }} --for=condition=Complete --timeout=600s
+      changed_when: false
+
+    - name: Collect NVIDIA GPU smoke test logs
+      ansible.builtin.command: >-
+        k3s kubectl -n {{ gpu_smoke_namespace }}
+        logs job/{{ gpu_smoke_job_name }}
+      register: gpu_smoke_logs
+      changed_when: false
+
+    - name: Print NVIDIA GPU smoke test logs
+      ansible.builtin.debug:
+        var: gpu_smoke_logs.stdout_lines
+
+    - name: Remove NVIDIA GPU smoke test job
+      ansible.builtin.command: >-
+        k3s kubectl -n {{ gpu_smoke_namespace }}
+        delete job {{ gpu_smoke_job_name }} --ignore-not-found=true
+      register: gpu_smoke_cleanup
+      changed_when: "'deleted' in gpu_smoke_cleanup.stdout"

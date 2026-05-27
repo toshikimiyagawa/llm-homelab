@@ -15,7 +15,9 @@
 - NVIDIA Container Toolkit 1.19.1は導入済み。
 - k3s v1.35.5+k3s1は導入済み。`llm01`はReady。
 - k3s containerd設定で`nvidia-container-runtime`検出済み。
-- NVIDIA Device Plugin、Tailscale、監視、ワークロードは未構築。
+- NVIDIA Device Plugin 0.17.1は導入済み。`llm01`は`nvidia.com/gpu: 1`を公開している。
+- Kubernetes上の一時Jobで`runtimeClassName: nvidia`と`nvidia.com/gpu: 1`を指定し、Pod内`nvidia-smi`実行確認済み。
+- Tailscale、監視、ワークロードは未構築。
 - RTX Pro 6000は未装着。2026-05-29または2026-05-30に装着予定。
 - 初期構築用に`toshiki ALL=(ALL) NOPASSWD: ALL`を一時設定中。構築完了後に削除または限定化する。
 
@@ -68,7 +70,14 @@ ansible-playbook playbooks/01-system.yml
 ansible-playbook playbooks/02-nvidia.yml
 ansible-playbook playbooks/03-container.yml
 ansible-playbook playbooks/04-k3s.yml
+ansible-playbook playbooks/05-gpu-plugin.yml
 ansible-playbook playbooks/site.yml
+```
+
+GPU Pod動作確認は通常構築とは分け、必要時だけ一時Jobとして実行する。
+
+```bash
+ansible-playbook playbooks/06-gpu-smoke-test.yml
 ```
 
 ### Phase 1: GTX 1650のみで構築
