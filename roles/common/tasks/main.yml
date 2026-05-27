@@ -1,0 +1,27 @@
+---
+- name: Configure timezone
+  community.general.timezone:
+    name: "{{ timezone }}"
+  when: common_manage_timezone
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: common_manage_packages
+
+- name: Install base packages
+  ansible.builtin.apt:
+    name: "{{ base_packages }}"
+    state: present
+  when: common_manage_packages
+
+- name: Ensure model and data directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop: "{{ model_directories }}"
+  when: common_manage_model_directories

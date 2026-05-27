@@ -1,0 +1,9 @@
+---
+- name: Validate llm01 prerequisites
+  hosts: llm_servers
+  gather_facts: true
+  roles:
+    - role: preflight
+      tags:
+        - preflight
+        - bootstrap

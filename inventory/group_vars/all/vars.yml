@@ -1,0 +1,42 @@
+---
+timezone: Asia/Tokyo
+locale: en_US.UTF-8
+
+expected_hostname: llm01
+expected_os_family: Debian
+expected_distribution: Ubuntu
+expected_distribution_major_version: "26"
+
+storage_mounts:
+  - path: /
+    source: /dev/mapper/ubuntu--vg-ubuntu--lv
+    fstype: ext4
+  - path: /var/lib/rancher
+    source: /dev/mapper/ubuntu--vg-rancher
+    fstype: ext4
+  - path: /opt
+    source: /dev/nvme1n1p1
+    fstype: ext4
+
+model_directories:
+  - /opt/models
+  - /opt/huggingface-cache
+  - /opt/prometheus-data
+
+base_packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - git
+  - gnupg
+  - htop
+  - jq
+  - lm-sensors
+  - lsb-release
+  - nvme-cli
+  - pciutils
+  - python3
+  - python3-apt
+  - smartmontools
+  - unzip
+  - vim

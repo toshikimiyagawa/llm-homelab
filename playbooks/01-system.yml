@@ -1,0 +1,9 @@
+---
+- name: Configure base operating system
+  hosts: llm_servers
+  gather_facts: true
+  roles:
+    - role: common
+      tags:
+        - common
+        - system

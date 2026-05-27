@@ -1,0 +1,70 @@
+---
+- name: Assert target host identity
+  ansible.builtin.assert:
+    that:
+      - ansible_facts.hostname == expected_hostname
+      - ansible_facts.distribution == expected_distribution
+      - ansible_facts.distribution_major_version == expected_distribution_major_version
+    fail_msg: >-
+      Target must be {{ expected_hostname }} on {{ expected_distribution }}
+      {{ expected_distribution_major_version }}. Found
+      {{ ansible_facts.hostname }} on {{ ansible_facts.distribution }}
+      {{ ansible_facts.distribution_version }}.
+    success_msg: Target host identity matches expected llm01 baseline.
+
+- name: Check Secure Boot state
+  ansible.builtin.command: mokutil --sb-state
+  register: secure_boot_state
+  changed_when: false
+  failed_when: secure_boot_state.rc != 0
+
+- name: Assert Secure Boot is disabled
+  ansible.builtin.assert:
+    that:
+      - "'SecureBoot disabled' in secure_boot_state.stdout"
+    fail_msg: "Secure Boot must be disabled before NVIDIA driver installation."
+    success_msg: Secure Boot is disabled.
+
+- name: Count IOMMU groups
+  ansible.builtin.find:
+    paths: /sys/kernel/iommu_groups
+    file_type: directory
+    recurse: false
+  register: iommu_groups
+
+- name: Assert IOMMU groups exist
+  ansible.builtin.assert:
+    that:
+      - iommu_groups.matched | int > 0
+    fail_msg: "IOMMU groups were not found. Enable IOMMU in BIOS before continuing."
+    success_msg: IOMMU groups are present.
+
+- name: Gather mount facts
+  ansible.builtin.command: findmnt --json {{ item.path }}
+  loop: "{{ storage_mounts }}"
+  register: mount_checks
+  changed_when: false
+
+- name: Assert expected storage mounts
+  ansible.builtin.assert:
+    that:
+      - item.rc == 0
+      - item.stdout is search(item.item.source)
+      - item.stdout is search(item.item.fstype)
+    fail_msg: "Expected {{ item.item.path }} to be mounted from {{ item.item.source }} as {{ item.item.fstype }}."
+    success_msg: "{{ item.item.path }} is mounted from {{ item.item.source }}."
+  loop: "{{ mount_checks.results }}"
+  loop_control:
+    label: "{{ item.item.path }}"
+
+- name: Check current NVIDIA PCI devices
+  ansible.builtin.shell: "set -o pipefail && lspci -nn | grep -Ei 'vga|3d|display|nvidia'"
+  args:
+    executable: /bin/bash
+  register: gpu_pci_devices
+  changed_when: false
+  failed_when: gpu_pci_devices.rc not in [0, 1]
+
+- name: Show detected display devices
+  ansible.builtin.debug:
+    var: gpu_pci_devices.stdout_lines

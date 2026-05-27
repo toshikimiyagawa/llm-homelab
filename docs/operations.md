@@ -9,6 +9,8 @@
 - ホスト名は`llm01`に設定済み。
 - `/var/lib/rancher`と`/opt`のストレージ分離は設定済み。
 - GTX 1650のみ装着済み。
+- Ansible inventory、preflight、基本OS設定roleは作成済み。
+- 基本OS設定playbookは適用済み。timezone、ベースパッケージ、`/opt`配下のデータディレクトリをAnsible管理している。
 - NVIDIAドライバ、k3s、Tailscale、監視、ワークロードは未構築。
 - RTX Pro 6000は未装着。2026-05-29または2026-05-30に装着予定。
 - 初期構築用に`toshiki ALL=(ALL) NOPASSWD: ALL`を一時設定中。構築完了後に削除または限定化する。
@@ -53,6 +55,14 @@ ansible all -m ping
 - Secure Bootがdisabled。
 - IOMMUグループが作成されている。
 - Ansible pingが成功する。
+
+現在のAnsible実行入口:
+
+```bash
+ansible-playbook playbooks/00-bootstrap.yml
+ansible-playbook playbooks/01-system.yml
+ansible-playbook playbooks/site.yml
+```
 
 ### Phase 1: GTX 1650のみで構築
 

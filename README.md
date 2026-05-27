@@ -29,6 +29,8 @@
   - `/`
   - `/var/lib/rancher`
   - `/opt`
+- Ansible inventory、preflight、基本OS設定roleを追加済み
+- 基本OS設定playbook適用済み
 - 初期構築用に一時的なpasswordless sudoを設定中。構築完了後に削除または限定化する。
 
 ## 構築フェーズ
@@ -38,6 +40,7 @@
 Ubuntuをインストールし、SSHで接続できる状態にする。BIOSではSecure Bootを無効化し、Above 4G Decoding、Re-Size BAR、IOMMUを有効化する。
 
 現在、Ubuntuインストール、SSHログイン、ホスト名設定、ストレージ初期構成までは完了済み。
+Ansibleでpreflightと基本OS設定を実行できる状態になっている。
 
 ### Phase 1: GTX 1650のみで構築
 

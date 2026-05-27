@@ -1,0 +1,6 @@
+---
+- name: Configure llm-homelab base system
+  ansible.builtin.import_playbook: 00-bootstrap.yml
+
+- name: Apply base system configuration
+  ansible.builtin.import_playbook: 01-system.yml
