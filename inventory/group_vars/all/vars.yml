@@ -1,0 +1,58 @@
+---
+timezone: Asia/Tokyo
+locale: en_US.UTF-8
+
+expected_hostname: llm01
+expected_os_family: Debian
+expected_distribution: Ubuntu
+expected_distribution_major_version: "26"
+
+storage_mounts:
+  - path: /
+    source: /dev/mapper/ubuntu--vg-ubuntu--lv
+    fstype: ext4
+  - path: /var/lib/rancher
+    source: /dev/mapper/ubuntu--vg-rancher
+    fstype: ext4
+  - path: /opt
+    source: /dev/nvme1n1p1
+    fstype: ext4
+
+model_directories:
+  - /opt/models
+  - /opt/huggingface-cache
+  - /opt/prometheus-data
+
+base_packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - git
+  - gnupg
+  - htop
+  - jq
+  - lm-sensors
+  - lsb-release
+  - nvme-cli
+  - pciutils
+  - python3
+  - python3-apt
+  - smartmontools
+  - unzip
+  - vim
+
+nvidia_driver_package: nvidia-driver-575-open
+nvidia_effective_driver_branch: "580"
+nvidia_effective_driver_version_observed: 580.159.03
+
+nvidia_container_toolkit_packages:
+  - nvidia-container-toolkit
+  - nvidia-container-runtime
+
+k3s_install_url: https://get.k3s.io
+k3s_config:
+  write-kubeconfig-mode: "0644"
+  node-name: llm01
+  node-label:
+    - llm-homelab/role=inference
+    - llm-homelab/gpu-light=gtx1650

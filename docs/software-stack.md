@@ -8,15 +8,18 @@
 
 ## コンテナ・オーケストレーション
 
-- k3s（シングルノード）
-- containerd（k3s標準ランタイム）
-- NVIDIA Container Toolkit
+- k3s v1.35.5+k3s1（シングルノード）
+- containerd 2.2.3-k3s1（k3s標準ランタイム）
+- NVIDIA Container Toolkit 1.19.1
 - NVIDIA Device Plugin for Kubernetes
+
+k3sは公式install scriptでsystemd serviceとして導入する。設定は`/etc/rancher/k3s/config.yaml`に置き、install scriptの一時引数に依存しない。K3sは起動時に`nvidia-container-runtime`を自動検出する。
 
 ## NVIDIA
 
-- ドライバ: 575系
-- CUDA: 12.9以降
+- 要求ドライバ: 575系open kernel module
+- 実機導入結果: Ubuntu 26.04の`nvidia-driver-575-open`は`nvidia-driver-580-open`へ依存するため、実ドライバは580.159.03
+- CUDA: 13.0（`nvidia-smi`表示）
 - Blackwell世代のため、オープンソースカーネルモジュールを前提にする。
 
 RTX Pro 6000装着後は、GPU UUIDをinventoryに記録する。

@@ -9,7 +9,13 @@
 - ホスト名は`llm01`に設定済み。
 - `/var/lib/rancher`と`/opt`のストレージ分離は設定済み。
 - GTX 1650のみ装着済み。
-- NVIDIAドライバ、k3s、Tailscale、監視、ワークロードは未構築。
+- Ansible inventory、preflight、基本OS設定roleは作成済み。
+- 基本OS設定playbookは適用済み。timezone、ベースパッケージ、`/opt`配下のデータディレクトリをAnsible管理している。
+- NVIDIA 575 open driver roleは作成済み、適用済み。Ubuntu 26.04では実ドライバ580.159.03として導入されている。
+- NVIDIA Container Toolkit 1.19.1は導入済み。
+- k3s v1.35.5+k3s1は導入済み。`llm01`はReady。
+- k3s containerd設定で`nvidia-container-runtime`検出済み。
+- NVIDIA Device Plugin、Tailscale、監視、ワークロードは未構築。
 - RTX Pro 6000は未装着。2026-05-29または2026-05-30に装着予定。
 - 初期構築用に`toshiki ALL=(ALL) NOPASSWD: ALL`を一時設定中。構築完了後に削除または限定化する。
 
@@ -53,6 +59,17 @@ ansible all -m ping
 - Secure Bootがdisabled。
 - IOMMUグループが作成されている。
 - Ansible pingが成功する。
+
+現在のAnsible実行入口:
+
+```bash
+ansible-playbook playbooks/00-bootstrap.yml
+ansible-playbook playbooks/01-system.yml
+ansible-playbook playbooks/02-nvidia.yml
+ansible-playbook playbooks/03-container.yml
+ansible-playbook playbooks/04-k3s.yml
+ansible-playbook playbooks/site.yml
+```
 
 ### Phase 1: GTX 1650のみで構築
 

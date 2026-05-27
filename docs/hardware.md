@@ -24,8 +24,9 @@
 - カーネル: Linux 7.0.0-15-generic
 - Secure Boot: Disabled（`mokutil --sb-state`で確認）
 - IOMMU: IOMMUグループ作成あり（`/sys/kernel/iommu_groups`で確認）
-- NVIDIAドライバ: 未導入（`nvidia-smi`なし）
-- 現在のGPU: GTX 1650のみ装着、nouveauドライバ使用中
+- NVIDIAドライバ: 導入済み（580.159.03、open kernel module）
+- 現在のGPU: GTX 1650のみ装着、NVIDIAドライバで認識済み
+- GTX 1650 UUID: `GPU-c6ed26bf-5bbd-7607-07e3-174c54a4e233`
 - RTX Pro 6000: 未装着。2026-05-29または2026-05-30に装着予定
 - Re-Size BAR / Above 4G Decoding: BIOS設定で有効化必須。RTX Pro 6000装着後にOS側で再確認する
 

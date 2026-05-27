@@ -1,0 +1,53 @@
+---
+- name: Install repository prerequisites
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+    state: present
+
+- name: Download NVIDIA Container Toolkit repository key
+  ansible.builtin.get_url:
+    url: https://nvidia.github.io/libnvidia-container/gpgkey
+    dest: /tmp/nvidia-container-toolkit.gpgkey
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Install NVIDIA Container Toolkit repository keyring
+  ansible.builtin.command:
+    cmd: >-
+      gpg --dearmor -o {{ nvidia_container_toolkit_keyring_path }}
+      /tmp/nvidia-container-toolkit.gpgkey
+    creates: "{{ nvidia_container_toolkit_keyring_path }}"
+
+- name: Configure NVIDIA Container Toolkit apt repository
+  ansible.builtin.copy:
+    dest: "{{ nvidia_container_toolkit_source_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      deb [signed-by={{ nvidia_container_toolkit_keyring_path }}] https://nvidia.github.io/libnvidia-container/stable/deb/$(ARCH) /
+      #deb [signed-by={{ nvidia_container_toolkit_keyring_path }}] https://nvidia.github.io/libnvidia-container/experimental/deb/$(ARCH) /
+  register: nvidia_container_toolkit_repo
+
+- name: Update apt cache for NVIDIA Container Toolkit repository
+  ansible.builtin.apt:
+    update_cache: true
+  when: nvidia_container_toolkit_repo.changed
+
+- name: Install NVIDIA Container Toolkit packages
+  ansible.builtin.apt:
+    name: "{{ nvidia_container_toolkit_packages }}"
+    state: present
+
+- name: Check NVIDIA Container Toolkit version
+  ansible.builtin.command: nvidia-ctk --version
+  register: nvidia_ctk_version
+  changed_when: false
+
+- name: Show NVIDIA Container Toolkit version
+  ansible.builtin.debug:
+    var: nvidia_ctk_version.stdout

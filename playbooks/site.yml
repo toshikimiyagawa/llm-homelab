@@ -1,0 +1,15 @@
+---
+- name: Configure llm-homelab base system
+  ansible.builtin.import_playbook: 00-bootstrap.yml
+
+- name: Apply base system configuration
+  ansible.builtin.import_playbook: 01-system.yml
+
+- name: Install NVIDIA driver
+  ansible.builtin.import_playbook: 02-nvidia.yml
+
+- name: Install container runtime integration
+  ansible.builtin.import_playbook: 03-container.yml
+
+- name: Install k3s
+  ansible.builtin.import_playbook: 04-k3s.yml

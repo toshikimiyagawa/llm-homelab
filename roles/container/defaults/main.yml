@@ -1,0 +1,3 @@
+---
+nvidia_container_toolkit_keyring_path: /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+nvidia_container_toolkit_source_path: /etc/apt/sources.list.d/nvidia-container-toolkit.list
