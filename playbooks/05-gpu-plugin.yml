@@ -1,0 +1,9 @@
+---
+- name: Install NVIDIA Kubernetes device plugin
+  hosts: llm_servers
+  gather_facts: true
+  roles:
+    - role: gpu_plugin
+      tags:
+        - gpu-plugin
+        - nvidia-device-plugin

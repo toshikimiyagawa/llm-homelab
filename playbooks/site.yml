@@ -13,3 +13,6 @@
 
 - name: Install k3s
   ansible.builtin.import_playbook: 04-k3s.yml
+
+- name: Install NVIDIA Kubernetes device plugin
+  ansible.builtin.import_playbook: 05-gpu-plugin.yml

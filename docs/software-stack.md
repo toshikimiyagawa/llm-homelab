@@ -11,9 +11,11 @@
 - k3s v1.35.5+k3s1（シングルノード）
 - containerd 2.2.3-k3s1（k3s標準ランタイム）
 - NVIDIA Container Toolkit 1.19.1
-- NVIDIA Device Plugin for Kubernetes
+- NVIDIA Device Plugin for Kubernetes 0.17.1
 
 k3sは公式install scriptでsystemd serviceとして導入する。設定は`/etc/rancher/k3s/config.yaml`に置き、install scriptの一時引数に依存しない。K3sは起動時に`nvidia-container-runtime`を自動検出する。
+
+NVIDIA Device Pluginはk3s Helm ControllerのHelmChart addonとして導入する。chartは`https://nvidia.github.io/k8s-device-plugin`を使い、`runtimeClassName: nvidia`、`nfd.enabled: false`を指定する。ノードにはchartの既定affinityに合わせて`nvidia.com/gpu.present=true`を付与する。
 
 ## NVIDIA
 

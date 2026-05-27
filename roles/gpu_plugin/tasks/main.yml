@@ -1,0 +1,84 @@
+---
+- name: Label node as NVIDIA GPU-capable
+  ansible.builtin.command: >-
+    k3s kubectl label node {{ expected_hostname }}
+    nvidia.com/gpu.present=true --overwrite
+  register: gpu_node_label
+  changed_when: "'not labeled' not in gpu_node_label.stdout"
+
+- name: Ensure k3s addon manifest directory exists
+  ansible.builtin.file:
+    path: "{{ nvidia_device_plugin_manifest_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Install NVIDIA device plugin HelmChart addon
+  ansible.builtin.copy:
+    dest: "{{ nvidia_device_plugin_manifest_path }}"
+    owner: root
+    group: root
+    mode: "0600"
+    content: |
+      ---
+      apiVersion: helm.cattle.io/v1
+      kind: HelmChart
+      metadata:
+        name: nvidia-device-plugin
+        namespace: kube-system
+      spec:
+        repo: https://nvidia.github.io/k8s-device-plugin
+        chart: nvidia-device-plugin
+        version: "{{ nvidia_device_plugin_chart_version }}"
+        targetNamespace: "{{ nvidia_device_plugin_namespace }}"
+        createNamespace: true
+        valuesContent: |-
+          runtimeClassName: nvidia
+          nfd:
+            enabled: false
+
+- name: Wait for NVIDIA device plugin namespace
+  ansible.builtin.command: >-
+    k3s kubectl get namespace {{ nvidia_device_plugin_namespace }}
+  register: gpu_plugin_namespace
+  retries: 60
+  delay: 5
+  until: gpu_plugin_namespace.rc == 0
+  changed_when: false
+
+- name: Wait for NVIDIA device plugin daemonset
+  ansible.builtin.command: >-
+    k3s kubectl -n {{ nvidia_device_plugin_namespace }}
+    rollout status daemonset/{{ nvidia_device_plugin_daemonset_name }}
+    --timeout=300s
+  register: gpu_plugin_rollout
+  changed_when: false
+
+- name: Wait for GPU resource to appear on node
+  ansible.builtin.shell: >-
+    set -o pipefail &&
+    k3s kubectl get node {{ expected_hostname }} -o json |
+    jq -r '.status.allocatable["nvidia.com/gpu"] // "0"'
+  args:
+    executable: /bin/bash
+  register: gpu_allocatable
+  retries: 30
+  delay: 5
+  until: gpu_allocatable.stdout | int > 0
+  changed_when: false
+
+- name: Show allocatable NVIDIA GPUs
+  ansible.builtin.debug:
+    msg: "{{ expected_hostname }} exposes {{ gpu_allocatable.stdout }} nvidia.com/gpu resource(s)."
+
+- name: Show NVIDIA device plugin pods
+  ansible.builtin.command: >-
+    k3s kubectl -n {{ nvidia_device_plugin_namespace }}
+    get pods -o wide
+  register: gpu_plugin_pods
+  changed_when: false
+
+- name: Print NVIDIA device plugin pods
+  ansible.builtin.debug:
+    var: gpu_plugin_pods.stdout_lines

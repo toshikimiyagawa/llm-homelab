@@ -23,15 +23,17 @@ llm-homelab/
 │   ├── 03-container.yml
 │   ├── 04-k3s.yml
 │   ├── 05-gpu-plugin.yml
-│   ├── 06-monitoring.yml
-│   ├── 07-tailscale.yml
-│   ├── 08-workloads.yml
-│   └── 09-flux-pro-display.yml
+│   ├── 06-gpu-smoke-test.yml
+│   ├── 07-monitoring.yml
+│   ├── 08-tailscale.yml
+│   ├── 09-workloads.yml
+│   └── 10-flux-pro-display.yml
 ├── roles/
 │   ├── common/
 │   ├── nvidia/
 │   ├── container/
 │   ├── k3s/
+│   ├── gpu_plugin/
 │   ├── tailscale/
 │   ├── monitoring/
 │   ├── workloads/
