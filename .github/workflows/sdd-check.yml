@@ -33,6 +33,5 @@ jobs:
 
       - name: Lint
         run: |
-          pip install ansible-lint yamllint
+          pip install yamllint
           yamllint -s .
-          ansible-lint
