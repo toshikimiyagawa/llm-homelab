@@ -29,7 +29,7 @@
 - GTX 1650 UUID: `GPU-c6ed26bf-5bbd-7607-07e3-174c54a4e233`（PCIe bus `05:00.0`）
 - RTX Pro 6000 UUID: `GPU-079e606a-926e-e5d4-dcd3-6322c089ef8a`（PCIe bus `0C:00.0`）
 - RTX Pro 6000: 2026-05-29装着済み、VRAM 96GB (97887 MiB)、TDP 600W
-- Re-Size BAR: **未有効**。BAR1が256MBのまま（対応範囲: 64MB〜128GB）。BIOSで Above 4G Decoding + Re-Size BAR を有効化し再起動が必要
+- Re-Size BAR: 有効。RTX Pro 6000のBAR1は128GB（2026-05-29 BIOS設定で Above 4G Decoding + Re-Size BAR を有効化）
 - HDD: TOSHIBA MN08ACA14T 14TB（`/dev/sda`、ext4フォーマット済み、未マウント）
 
 ## GPU配置
@@ -54,7 +54,7 @@ RTX Pro 6000装着後の確認結果（2026-05-29）:
 
 残タスク:
 
-- [ ] BIOS で Re-Size BAR / Above 4G Decoding を有効化 → 再起動 → BAR1サイズ確認
+- [x] BIOS で Re-Size BAR / Above 4G Decoding を有効化 → 再起動 → BAR1サイズ確認（2026-05-29完了）
 - [ ] HDD (`/dev/sda` 14TB) のマウントポイント決定・fstab設定
 
 ## サイズ・クリアランス
