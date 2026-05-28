@@ -16,7 +16,7 @@ jobs:
           base="${{ github.event.pull_request.base.sha }}"
           changed="$(git diff --name-only "$base"...HEAD)"
           # Exempt paths: docs, specs, .sdd, the guide submodule, CI/tooling config, and any markdown.
-          src="$(echo "$changed" | grep -vE '^(docs/|specs/|\.sdd/|vendor/ai-sdd-guide/|\.claude/|\.github/|\.gitmodules$|.*\.md$)' || true)"
+          src="$(echo "$changed" | grep -vE '^(docs/|specs/|\.sdd/|vendor/|\.claude/|\.github/|\.gitmodules$|.*\.md$)' || true)"
 
           labels='${{ toJSON(github.event.pull_request.labels.*.name) }}'
           if echo "$labels" | grep -q 'sdd:tier-0'; then
