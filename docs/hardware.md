@@ -2,7 +2,7 @@
 
 ## 確定構成
 
-確認日: 2026-05-28（`llm01` / Ubuntu上で確認）
+確認日: 2026-05-29（`llm01` / Ubuntu上で確認）
 
 | 区分 | 内容 |
 |------|------|
@@ -13,7 +13,7 @@
 | RAM | 128GB DDR4（32GB x 4、G.Skill F4-3200C16-32GVK、現在2666 MT/s動作） |
 | GPU 1 | NVIDIA RTX Pro 6000 Blackwell Workstation Edition（600Wフル版、96GB VRAM） |
 | GPU 2 | NVIDIA GeForce GTX 1650（4GB VRAM） |
-| ストレージ | NVMe SSD 1TB x 2（CSSD-M2B1TPG3VNF系） |
+| ストレージ | NVMe SSD 1TB x 2（CSSD-M2B1TPG3VNF系）、HDD 14TB x 1（TOSHIBA MN08ACA14T、NAS用3.5インチ） |
 | ケース | Antec Flux Pro（無印、通常版） |
 | 電源 | Seasonic PRIME TX-1600（通常版、80+ Titanium、ATX 3.1、12V-2x6、12年保証） |
 | CPUクーラー | Noctua NH-D15（空冷、初代 or D15S） |
@@ -24,18 +24,20 @@
 - カーネル: Linux 7.0.0-15-generic
 - Secure Boot: Disabled（`mokutil --sb-state`で確認）
 - IOMMU: IOMMUグループ作成あり（`/sys/kernel/iommu_groups`で確認）
-- NVIDIAドライバ: 導入済み（580.159.03、open kernel module）
-- 現在のGPU: GTX 1650のみ装着、NVIDIAドライバで認識済み
-- GTX 1650 UUID: `GPU-c6ed26bf-5bbd-7607-07e3-174c54a4e233`
-- RTX Pro 6000: 未装着。2026-05-29または2026-05-30に装着予定
-- Re-Size BAR / Above 4G Decoding: BIOS設定で有効化必須。RTX Pro 6000装着後にOS側で再確認する
+- NVIDIAドライバ: 導入済み（580.159.03、open kernel module、CUDA 13.0）
+- 現在のGPU: GTX 1650 + RTX Pro 6000 の2枚装着、NVIDIAドライバで認識済み
+- GTX 1650 UUID: `GPU-c6ed26bf-5bbd-7607-07e3-174c54a4e233`（PCIe bus `05:00.0`）
+- RTX Pro 6000 UUID: `GPU-079e606a-926e-e5d4-dcd3-6322c089ef8a`（PCIe bus `0C:00.0`）
+- RTX Pro 6000: 2026-05-29装着済み、VRAM 96GB (97887 MiB)、TDP 600W
+- Re-Size BAR: **未有効**。BAR1が256MBのまま（対応範囲: 64MB〜128GB）。BIOSで Above 4G Decoding + Re-Size BAR を有効化し再起動が必要
+- HDD: TOSHIBA MN08ACA14T 14TB（`/dev/sda`、ext4フォーマット済み、未マウント）
 
 ## GPU配置
 
 ```text
-PCIe x16_1 (CPU直結 x16)       -> RTX Pro 6000
+PCIe x16_1 (CPU直結 x16)       -> RTX Pro 6000 [0C:00.0] (LnkCap: Gen5 x16, アイドル時Gen1)
 PCIe x16_2 (CPU直結 x8)        -> 空
-PCIe x16_3 (チップセット x4)   -> GTX 1650
+PCIe x16_3 (チップセット x4)   -> GTX 1650 [05:00.0] (LnkCap: Gen3 x16, 実動作: x4)
 ```
 
 理由:
@@ -44,14 +46,16 @@ PCIe x16_3 (チップセット x4)   -> GTX 1650
 - GTX 1650は軽量推論用途なのでx4で十分。
 - GPU間に空きスロットを設け、熱干渉を避ける。
 
-RTX Pro 6000装着後に確認すること:
+RTX Pro 6000装着後の確認結果（2026-05-29）:
 
-```bash
-lspci -nn | grep -Ei 'vga|3d|display|nvidia'
-nvidia-smi
-nvidia-smi -L
-sudo lspci -vv -s <RTX_BUS_ID> | grep -E 'LnkCap|LnkSta'
-```
+- `lspci`: `0C:00.0` に `GB202GL [RTX PRO 6000 Blackwell Workstation Edition] [10de:2bb1]` として認識
+- `nvidia-smi -L`: 2枚認識（GPU 0: GTX 1650、GPU 1: RTX PRO 6000）
+- PCIeリンク: Width x16 正常、Speed はアイドル時Gen1（省電力）→ 負荷時Gen5にスケール
+
+残タスク:
+
+- [ ] BIOS で Re-Size BAR / Above 4G Decoding を有効化 → 再起動 → BAR1サイズ確認
+- [ ] HDD (`/dev/sda` 14TB) のマウントポイント決定・fstab設定
 
 ## サイズ・クリアランス
 

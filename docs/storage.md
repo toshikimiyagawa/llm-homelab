@@ -26,6 +26,8 @@
        ├── /opt/models
        ├── /opt/huggingface-cache
        └── /opt/prometheus-data
+
+/dev/sda (14TB HDD, TOSHIBA MN08ACA14T) -> 未マウント（ext4フォーマット済み）
 ```
 
 ## 永続マウント
