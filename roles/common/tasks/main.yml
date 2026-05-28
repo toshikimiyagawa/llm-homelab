@@ -16,6 +16,28 @@
     state: present
   when: common_manage_packages
 
+- name: Create systemd-networkd-wait-online override directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/systemd-networkd-wait-online.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  when: common_manage_networkd_wait_online
+
+- name: Limit networkd-wait-online to primary interface
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/systemd-networkd-wait-online.service.d/override.conf
+    content: |
+      [Service]
+      ExecStart=
+      ExecStart=/usr/lib/systemd/systemd-networkd-wait-online --interface={{ networkd_wait_online_interface }}
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload systemd
+  when: common_manage_networkd_wait_online
+
 - name: Ensure model and data directories exist
   ansible.builtin.file:
     path: "{{ item }}"

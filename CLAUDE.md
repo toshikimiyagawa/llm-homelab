@@ -45,11 +45,12 @@
 - OS: Ubuntu 26.04 LTS
 - CPU: AMD Ryzen 9 3950X
 - RAM: 128GB DDR4
-- GPU: 現在GTX 1650のみ。RTX Pro 6000 Blackwell 600W版は2026-05-29または2026-05-30装着予定。
+- GPU: GTX 1650 + RTX Pro 6000 Blackwell 600W版（2026-05-29装着済み、96GB VRAM）
 - ストレージ:
   - `/`: 100GB ext4 on LVM
   - `/var/lib/rancher`: 300GB ext4 on LVM
   - `/opt`: 約916GB ext4 on `/dev/nvme1n1p1`
+  - HDD: 14TB TOSHIBA MN08ACA14T（`/dev/sda`、未マウント）
 
 詳細は以下を参照してください。
 
