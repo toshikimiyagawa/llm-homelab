@@ -1,4 +1,25 @@
-# AGENTS.md
+# Project Guidelines (AGENTS.md)
+
+このプロジェクトは Spec-Driven Development (SDD) に従う。実装エージェントの役割は
+**凍結された spec の実装**であり、設計ではない。
+
+## 実装前に
+
+1. `specs/<feature>/` 配下の active な spec を確認する（`spec.md` / `plan.md` / `tasks.md`）。
+2. `tasks.md` のタスクを正確に実装する。`spec.md` の受け入れ基準はすべてテストに対応させる。
+
+## SDD ハードルール（CI が強制）
+
+- 承認されたタスクの範囲を超えて振る舞いを変更しない。
+- すべての受け入れ基準に対してパスするテストがあること。
+- spec が間違っている、曖昧、または不十分な場合: **STOP** して人間にメモを残す。再設計しない。
+- 実装に合わせて `specs/` 配下のファイルを変更しない。
+
+詳細: `vendor/ai-sdd-guide/rules/`（英語）／ `vendor/ai-sdd-guide/docs/`（日本語）
+
+---
+
+# プロジェクト固有ルール
 
 このリポジトリは、自宅実家に設置するLLM推論サーバーをAnsibleで再現可能に構築・運用するためのものです。
 
@@ -47,12 +68,11 @@
 
 ## 作業ワークフロー
 
-1. 作業範囲を確認する。
-2. 必ずfeatureブランチを作成し、`main`へ直接コミットしない。
-3. 実装・ドキュメント更新・テストを行う。
-4. `git status`で意図しない変更がないことを確認する。
-5. Conventional Commits形式でコミットする。
-6. マージするときは必ずPRを作成し、ユーザーレビュー後に`main`へマージする。
-7. PRのdescriptionは日本語で書く。
+1. 必ずfeatureブランチを作成し、`main`へ直接コミットしない。
+2. 実装・ドキュメント更新・テストを行う。
+3. `git status`で意図しない変更がないことを確認する。
+4. Conventional Commits形式でコミットする。
+5. マージするときは必ずPRを作成し、ユーザーレビュー後に`main`へマージする。
+6. PRのdescriptionは日本語で書く。
 
 CI/CD自動デプロイはしない。本番サーバーへの適用は手動で`ansible-playbook`を実行する。

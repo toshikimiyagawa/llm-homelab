@@ -1,0 +1,6 @@
+{
+  "feature": "integrate-ai-sdd-guide",
+  "tier": 0,
+  "phase": "implement",
+  "justification": "SDD infrastructure setup — no application logic changed"
+}
