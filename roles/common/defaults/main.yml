@@ -2,3 +2,4 @@
 common_manage_packages: true
 common_manage_timezone: true
 common_manage_model_directories: true
+common_manage_networkd_wait_online: true

@@ -23,6 +23,8 @@ model_directories:
   - /opt/huggingface-cache
   - /opt/prometheus-data
 
+networkd_wait_online_interface: enp6s0
+
 base_packages:
   - apt-transport-https
   - ca-certificates
