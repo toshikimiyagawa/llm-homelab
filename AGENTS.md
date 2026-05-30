@@ -34,7 +34,8 @@ agent ごとの手順は `vendor/ai-sdd-guide/orchestration/rules/orchestration.
 
 人間向け解説: `vendor/ai-sdd-guide/docs/`
 テンプレート: `vendor/ai-sdd-guide/templates/`
-Hooks: `.claude/settings.json`
+Claude hooks: `.claude/settings.json`
+Codex hooks: `.codex/config.toml`
 Subagents: `.claude/agents/`
 
 ## CLAUDE.md

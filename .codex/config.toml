@@ -1,0 +1,23 @@
+# Codex project-local SDD hooks.
+# Codex loads this file from <repo>/.codex/config.toml when the project is trusted.
+# Review and trust hook definitions with /hooks after installing or changing them.
+
+[features]
+hooks = true
+
+[[hooks.PreToolUse]]
+matcher = "^apply_patch$|^Bash$"
+
+[[hooks.PreToolUse.hooks]]
+type = "command"
+command = 'bash "$(git rev-parse --show-toplevel)/vendor/ai-sdd-guide/integration/hooks/codex-sdd-guard.sh"'
+timeout = 30
+statusMessage = "Checking SDD policy"
+
+[[hooks.UserPromptSubmit]]
+
+[[hooks.UserPromptSubmit.hooks]]
+type = "command"
+command = 'bash "$(git rev-parse --show-toplevel)/vendor/ai-sdd-guide/integration/hooks/codex-skill-reminder.sh"'
+timeout = 30
+statusMessage = "Loading SDD reminder"
