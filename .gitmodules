@@ -1,3 +1,6 @@
 [submodule "vendor/ai-sdd-guide"]
 	path = vendor/ai-sdd-guide
 	url = https://github.com/toshikimiyagawa/ai-sdd-guide.git
+[submodule "vendor/agents-devcontainer"]
+	path = vendor/agents-devcontainer
+	url = https://github.com/toshikimiyagawa/agents-devcontainer.git
