@@ -37,6 +37,17 @@ jobs:
           pip install yamllint
           yamllint -s .
 
+  ansible-lint:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run ansible-lint (non-blocking)
+        run: |
+          pip install ansible-lint
+          ansible-lint
+
   orchestration:
     runs-on: ubuntu-latest
     steps:
