@@ -1,21 +1,45 @@
-# Project Guidelines (AGENTS.md)
+# Project Guidelines
 
-このプロジェクトは Spec-Driven Development (SDD) に従う。実装エージェントの役割は
-**凍結された spec の実装**であり、設計ではない。
+このプロジェクトは Spec-Driven Development (SDD) に従う。作業前に正本ルールを読むこと。
 
-## 実装前に
+- `vendor/ai-sdd-guide/rules/core.md`
+- `vendor/ai-sdd-guide/rules/workflow.md`
+- `vendor/ai-sdd-guide/rules/subagents.md`
+- `vendor/ai-sdd-guide/rules/conventions.md`
+- `vendor/ai-sdd-guide/orchestration/rules/orchestration.md`
+- `vendor/ai-sdd-guide/catalog/rules/catalog.md`
 
-1. `specs/<feature>/` 配下の active な spec を確認する（`spec.md` / `plan.md` / `tasks.md`）。
-2. `tasks.md` のタスクを正確に実装する。`spec.md` の受け入れ基準はすべてテストに対応させる。
+## 設計フェーズ（superpowers 必須）
+
+spec / plan / tasks は superpowers skills（brainstorming -> writing-plans）を使って作成する。
+成果物は `specs/<feature>/` に保存し、人間の承認後に freeze する。
+
+## 実装フェーズ（任意の agent で可）
+
+実装エージェントの役割は **凍結された spec の実装**であり、設計ではない。
+`specs/<feature>/tasks.md` を過不足なく実装し、`spec.md` の受け入れ基準はすべてテストに対応させる。
+spec が間違っている、曖昧、または不十分な場合は **STOP** して人間にメモを残す。再設計しない。
+
+## 検証フェーズ（superpowers 必須）
+
+`sdd-reviewer` subagent / prompt を diff に対して実行し、実装が凍結済み spec に一致することを確認する。
+agent ごとの手順は `vendor/ai-sdd-guide/orchestration/rules/orchestration.md` を参照する。
 
 ## SDD ハードルール（CI が強制）
 
 - 承認されたタスクの範囲を超えて振る舞いを変更しない。
 - すべての受け入れ基準に対してパスするテストがあること。
-- spec が間違っている、曖昧、または不十分な場合: **STOP** して人間にメモを残す。再設計しない。
 - 実装に合わせて `specs/` 配下のファイルを変更しない。
+- SDD hooks / CI を無効化しない。
 
-詳細: `vendor/ai-sdd-guide/rules/`（英語）／ `vendor/ai-sdd-guide/docs/`（日本語）
+人間向け解説: `vendor/ai-sdd-guide/docs/`
+テンプレート: `vendor/ai-sdd-guide/templates/`
+Hooks: `.claude/settings.json`
+Subagents: `.claude/agents/`
+
+## CLAUDE.md
+
+`CLAUDE.md` はこのファイルへの symlink として管理する。通常ファイルで置き換えないこと。
 
 ---
 
@@ -50,11 +74,12 @@
 - OS: Ubuntu 26.04 LTS
 - CPU: AMD Ryzen 9 3950X
 - RAM: 128GB DDR4
-- GPU: 現在GTX 1650のみ。RTX Pro 6000 Blackwell 600W版は2026-05-29または2026-05-30装着予定。
+- GPU: GTX 1650 + RTX Pro 6000 Blackwell 600W版（2026-05-29装着済み、96GB VRAM）
 - ストレージ:
   - `/`: 100GB ext4 on LVM
   - `/var/lib/rancher`: 300GB ext4 on LVM
   - `/opt`: 約916GB ext4 on `/dev/nvme1n1p1`
+  - HDD: 14TB TOSHIBA MN08ACA14T（`/dev/sda`、未マウント）
 
 詳細は以下を参照してください。
 
@@ -68,11 +93,15 @@
 
 ## 作業ワークフロー
 
-1. 必ずfeatureブランチを作成し、`main`へ直接コミットしない。
-2. 実装・ドキュメント更新・テストを行う。
-3. `git status`で意図しない変更がないことを確認する。
-4. Conventional Commits形式でコミットする。
-5. マージするときは必ずPRを作成し、ユーザーレビュー後に`main`へマージする。
-6. PRのdescriptionは日本語で書く。
+SDD ワークフロー（Tier制）に従う。詳細は `vendor/ai-sdd-guide/rules/workflow.md` を参照。
+
+1. 作業範囲を確認し、Tier を判定する（0: 自明な修正、1: 小さなbugfix、2: 中〜大機能）。
+2. 必ずfeatureブランチを作成し、`main`へ直接コミットしない。
+3. Tier 1以上は `specs/<feature>/` に spec を作成してから実装する。
+4. 実装・ドキュメント更新・テストを行う。
+5. `git status`で意図しない変更がないことを確認する。
+6. Conventional Commits形式でコミットする。
+7. マージするときは必ずPRを作成し、ユーザーレビュー後に`main`へマージする。
+8. PRのdescriptionは日本語で書く。
 
 CI/CD自動デプロイはしない。本番サーバーへの適用は手動で`ansible-playbook`を実行する。
