@@ -7,6 +7,8 @@
 @vendor/ai-sdd-guide/rules/workflow.md
 @vendor/ai-sdd-guide/rules/subagents.md
 @vendor/ai-sdd-guide/rules/conventions.md
+@vendor/ai-sdd-guide/orchestration/rules/orchestration.md
+@vendor/ai-sdd-guide/catalog/rules/catalog.md
 
 - 設計フェーズ (spec/plan/tasks/verify) は Claude のみ。superpowers と subagent を使う。
 - 実装は他agentでも可。`specs/<feature>/` を契約として厳守する。
