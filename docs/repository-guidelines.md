@@ -69,6 +69,12 @@ llm-homelab/
 - playbook/roleには適切な`tags:`を付与する。
 - シークレットを含むタスクには`no_log: true`を付ける。
 
+## Lint運用ポリシー
+
+- issue 実装中の検証は、まず変更ファイル単位で `yamllint` / `ansible-lint` を実行して差分起因の問題を確認する。
+- repo-wide 実行（`yamllint -s .` / `ansible-lint`）は最終確認として実行し、既存違反と新規違反を切り分けて扱う。
+- 既存 lint 負債（例: 既存 role の `ansible-lint` 違反）は、個別 issue で段階的に解消する。機能 issue で無関係な負債を同時修正しない。
+
 ## コミットメッセージ
 
 Conventional Commits形式を使う。

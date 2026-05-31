@@ -18,4 +18,4 @@ rules:
 
 ignore: |
   .ansible/
-  .devcontainer/dotfiles/.codex/
+  dotfiles/.codex/.tmp/
