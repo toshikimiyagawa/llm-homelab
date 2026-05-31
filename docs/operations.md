@@ -72,6 +72,7 @@ ansible-playbook playbooks/03-container.yml
 ansible-playbook playbooks/04-k3s.yml
 ansible-playbook playbooks/05-gpu-plugin.yml
 ansible-playbook playbooks/10-flux-pro-display.yml
+ansible-playbook playbooks/20-ollama.yml
 ansible-playbook playbooks/site.yml
 ```
 
@@ -196,6 +197,51 @@ alerts:
 ```
 
 `scripts/thermal-guard.sh`を配置し、systemd timerで定期実行する。
+
+## Ollama（GTX 1650 軽量推論）
+
+GTX 1650（4GB VRAM）上で軽量モデルを提供する。`127.0.0.1:11434` のみにバインドし、外部に認証なしで露出しない。
+
+導入:
+
+```bash
+ansible-playbook playbooks/20-ollama.yml
+```
+
+動作確認:
+
+```bash
+# サービス状態
+systemctl is-enabled ollama
+systemctl is-active ollama
+
+# ログ
+journalctl -u ollama -f
+
+# API ヘルスチェック（モデル一覧が返れば正常）
+curl http://127.0.0.1:11434/api/tags
+
+# モデル一覧
+ollama list
+
+# GTX 1650 の GPU 使用率確認（推論中に上昇することを確認）
+nvidia-smi -i 0
+```
+
+モデル取得例（GTX 1650 の 4GB VRAM に収まる量子化モデル推奨）:
+
+```bash
+ollama pull qwen2.5:0.5b
+ollama pull gemma3:1b
+```
+
+障害時診断:
+
+```bash
+systemctl status ollama
+journalctl -u ollama -n 100 --no-pager
+cat /etc/systemd/system/ollama.service.d/override.conf
+```
 
 ## GPUパワーリミット
 

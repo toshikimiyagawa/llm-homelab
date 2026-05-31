@@ -19,3 +19,6 @@
 
 - name: Configure Antec Flux Pro temperature display
   ansible.builtin.import_playbook: 10-flux-pro-display.yml
+
+- name: Install Ollama lightweight inference engine
+  ansible.builtin.import_playbook: 20-ollama.yml
