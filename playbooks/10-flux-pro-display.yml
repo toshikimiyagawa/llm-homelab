@@ -1,0 +1,8 @@
+---
+- name: Configure Antec Flux Pro temperature display
+  hosts: all
+  become: true
+  roles:
+    - role: flux_pro_display
+      tags:
+        - flux_pro_display

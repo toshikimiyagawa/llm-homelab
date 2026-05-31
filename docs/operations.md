@@ -71,6 +71,7 @@ ansible-playbook playbooks/02-nvidia.yml
 ansible-playbook playbooks/03-container.yml
 ansible-playbook playbooks/04-k3s.yml
 ansible-playbook playbooks/05-gpu-plugin.yml
+ansible-playbook playbooks/10-flux-pro-display.yml
 ansible-playbook playbooks/site.yml
 ```
 
@@ -138,6 +139,48 @@ ansible-playbook playbooks/site.yml --tags vllm
 - Ollama API: `http://100.x.x.x:11434`
 
 ## 温度監視
+
+## Flux Pro温度表示（Linux代替実装）
+
+Antec公式 `iUnity` は Windows 向けのため、Ubuntu では
+`af-pro-display`（`nishtahir/antec-flux-pro-display`）を使って
+ケース表示を CPU+GPU 温度で運用する。
+
+前提条件:
+
+- NVIDIA ドライバ導入済み（GPU温度取得に NVML が必要）
+- Flux Pro 表示デバイスが USB 接続され、`lsusb` で `2022:0522` が見える
+- `udev` ルールでサービス実行ユーザーがデバイスにアクセス可能
+
+導入:
+
+```bash
+ansible-playbook playbooks/10-flux-pro-display.yml
+```
+
+動作確認（CPU+GPU表示）:
+
+```bash
+systemctl is-enabled af-pro-display
+systemctl is-active af-pro-display
+journalctl -u af-pro-display -n 50 --no-pager
+lsusb | grep '2022:0522'
+```
+
+期待値:
+
+- `is-enabled` が `enabled`
+- `is-active` が `active`
+- ケースの温度表示が CPU/GPU の更新に追従する
+
+障害時診断:
+
+```bash
+systemctl status af-pro-display
+journalctl -u af-pro-display -n 100 --no-pager
+lsusb | grep '2022:0522'
+udevadm info --name=/dev/bus/usb/$(lsusb | grep '2022:0522' | awk '{print $2 "/" substr($4,1,3)}')
+```
 
 エアコンなし環境のため、温度閾値は保守的にする。
 
