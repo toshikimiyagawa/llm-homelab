@@ -1,0 +1,10 @@
+---
+flux_pro_display_version: "0.1.2"
+flux_pro_display_deb_url: "https://github.com/nishtahir/antec-flux-pro-display/releases/download/v{{ flux_pro_display_version }}/af-pro-display.deb"
+flux_pro_display_deb_path: "/tmp/af-pro-display-{{ flux_pro_display_version }}.deb"
+flux_pro_display_service_name: "af-pro-display"
+flux_pro_display_libgpiod_package: "libgpiod3"
+flux_pro_display_usb_vendor_id: "2022"
+flux_pro_display_usb_product_id: "0522"
+flux_pro_display_udev_group: "plugdev"
+flux_pro_display_udev_rules_path: "/etc/udev/rules.d/60-af-pro-display.rules"

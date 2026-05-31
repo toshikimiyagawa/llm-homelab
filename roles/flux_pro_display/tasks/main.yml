@@ -1,0 +1,67 @@
+---
+- name: Ensure required packages for Flux Pro display are installed
+  ansible.builtin.apt:
+    name:
+      - curl
+      - "{{ flux_pro_display_libgpiod_package }}"
+    state: present
+    update_cache: true
+  become: true
+  tags:
+    - flux_pro_display
+
+- name: Download af-pro-display Debian package
+  ansible.builtin.get_url:
+    url: "{{ flux_pro_display_deb_url }}"
+    dest: "{{ flux_pro_display_deb_path }}"
+    mode: "0644"
+  become: true
+  tags:
+    - flux_pro_display
+
+- name: Install af-pro-display package
+  ansible.builtin.apt:
+    deb: "{{ flux_pro_display_deb_path }}"
+    state: present
+  become: true
+  tags:
+    - flux_pro_display
+
+- name: Configure udev rule for Flux Pro display access
+  ansible.builtin.copy:
+    dest: "{{ flux_pro_display_udev_rules_path }}"
+    mode: "0644"
+    content: >-
+      SUBSYSTEM=="usb", ATTR{idVendor}=="{{ flux_pro_display_usb_vendor_id }}",
+      ATTR{idProduct}=="{{ flux_pro_display_usb_product_id }}", MODE="0660",
+      GROUP="{{ flux_pro_display_udev_group }}"
+  become: true
+  tags:
+    - flux_pro_display
+
+- name: Reload udev rules
+  ansible.builtin.command: udevadm control --reload-rules
+  changed_when: true
+  become: true
+  tags:
+    - flux_pro_display
+
+- name: Trigger udev for Flux Pro display device
+  ansible.builtin.command: >-
+    udevadm trigger --subsystem-match=usb
+    --attr-match=idVendor={{ flux_pro_display_usb_vendor_id }}
+    --attr-match=idProduct={{ flux_pro_display_usb_product_id }}
+  changed_when: true
+  become: true
+  tags:
+    - flux_pro_display
+
+- name: Enable and start af-pro-display service
+  ansible.builtin.systemd:
+    name: "{{ flux_pro_display_service_name }}"
+    enabled: true
+    state: started
+    daemon_reload: true
+  become: true
+  tags:
+    - flux_pro_display

@@ -100,3 +100,8 @@ refactor: split nvidia role into driver and toolkit
 - 可能な範囲でテストを書く。
 - コミット前に`ansible-lint`、`yamllint`を実行する。
 - 不明点は推測せず確認する。
+
+## 実装済み補足（2026-05-31時点）
+
+- `playbooks/10-flux-pro-display.yml` は実装済み（Linux向け代替実装）。
+- `roles/flux_pro_display/` は実装済み。

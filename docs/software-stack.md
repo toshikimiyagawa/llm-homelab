@@ -43,6 +43,10 @@ RTX Pro 6000装着後は、GPU UUIDをinventoryに記録する。
 - Tailscale
 - Antec Flux Pro温度ディスプレイ
 
+Antec Flux Pro の温度表示は Linux ネイティブ実装として
+`nishtahir/antec-flux-pro-display` を採用する。
+`af-pro-display` systemd service により、CPU+GPU 温度を起動時から継続表示する。
+
 ## 外部AI連携
 
 ローカルLLMをメインにし、必要時のみクラウドAPIを呼ぶ。
