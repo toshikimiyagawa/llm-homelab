@@ -14,5 +14,13 @@
     "status": "completed",
     "handoff": "specs/issue-31-lint-verification-policy/handoff.md",
     "blocked_reason": null
+  },
+  {
+    "id": "issue-19-ollama",
+    "phase": "done",
+    "assigned_agent": "claude",
+    "status": "completed",
+    "handoff": null,
+    "blocked_reason": null
   }
 ]
