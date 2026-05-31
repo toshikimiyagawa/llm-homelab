@@ -1,6 +1,6 @@
 {
   "feature": "issue-19-ollama",
   "tier": 2,
-  "phase": "implement",
+  "phase": "done",
   "justification": "Tier 2: new Ansible role + playbook for Ollama lightweight inference on GTX 1650"
 }
