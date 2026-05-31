@@ -18,4 +18,4 @@
 ## Definition of Done
 - [x] 全ACに対応するテスト/確認手順が存在する
 - [ ] `yamllint -s .` と `ansible-lint` が実行される
-- [ ] verify フェーズで sdd-reviewer の確認を通過する
+- [x] verify フェーズで sdd-reviewer の確認を通過する
