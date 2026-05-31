@@ -1,0 +1,10 @@
+[
+  {
+    "id": "issue-22-antec-flux-pro-display",
+    "phase": "verify",
+    "assigned_agent": "codex",
+    "status": "in_progress",
+    "handoff": "specs/issue-22-antec-flux-pro-display/handoff.md",
+    "blocked_reason": null
+  }
+]
