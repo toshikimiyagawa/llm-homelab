@@ -23,6 +23,11 @@ model_directories:
   - /opt/huggingface-cache
   - /opt/prometheus-data
 
+archive_hdd_device: /dev/sda
+archive_hdd_mount_path: /mnt/archive
+archive_hdd_fstype: ext4
+archive_hdd_mount_opts: defaults,nofail
+
 networkd_wait_online_interface: enp6s0
 
 base_packages:

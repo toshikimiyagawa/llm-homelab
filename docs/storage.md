@@ -27,7 +27,8 @@
        ├── /opt/huggingface-cache
        └── /opt/prometheus-data
 
-/dev/sda (14TB HDD, TOSHIBA MN08ACA14T) -> 未マウント（ext4フォーマット済み）
+/dev/sda (14TB HDD, TOSHIBA MN08ACA14T) -> アーカイブ/退避用
+   └── /mnt/archive           (ext4, UUID指定で永続マウント)
 ```
 
 ## 永続マウント
@@ -37,6 +38,7 @@
 | `/` | `/dev/mapper/ubuntu--vg-ubuntu--lv` |
 | `/var/lib/rancher` | `/dev/mapper/ubuntu--vg-rancher` |
 | `/opt` | `/dev/nvme1n1p1` |
+| `/mnt/archive` | `/dev/sda`（UUID指定） |
 
 `/etc/fstab`はUUID指定で管理する。
 
@@ -49,6 +51,7 @@
 | `/opt/models` | LLMモデル本体 |
 | `/opt/huggingface-cache` | Hugging Faceキャッシュ |
 | `/opt/prometheus-data` | Prometheusデータ |
+| `/mnt/archive` | 長期保管データ、バックアップ退避先 |
 
 ## 監視閾値
 

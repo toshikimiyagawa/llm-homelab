@@ -22,5 +22,13 @@
     "status": "completed",
     "handoff": null,
     "blocked_reason": null
+  },
+  {
+    "id": "issue-16-hdd-mount",
+    "phase": "done",
+    "assigned_agent": "codex",
+    "status": "completed",
+    "handoff": "specs/issue-16-hdd-mount/handoff.md",
+    "blocked_reason": null
   }
 ]

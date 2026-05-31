@@ -47,3 +47,43 @@
     mode: "0755"
   loop: "{{ model_directories }}"
   when: common_manage_model_directories
+
+- name: Get UUID for archive HDD device
+  ansible.builtin.command:
+    cmd: "blkid -s UUID -o value {{ archive_hdd_device }}"
+  register: common_archive_hdd_uuid
+  changed_when: false
+  when: common_manage_archive_hdd_mount
+
+- name: Fail when archive HDD UUID is not found
+  ansible.builtin.assert:
+    that:
+      - common_archive_hdd_uuid.stdout | trim | length > 0
+    fail_msg: "UUID not found for {{ archive_hdd_device }}. Check device path and filesystem."
+  when: common_manage_archive_hdd_mount
+
+- name: Check archive HDD mount point path
+  ansible.builtin.stat:
+    path: "{{ archive_hdd_mount_path }}"
+  register: common_archive_hdd_mount_path
+  when: common_manage_archive_hdd_mount
+
+- name: Ensure archive HDD mount point exists
+  ansible.builtin.file:
+    path: "{{ archive_hdd_mount_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  when:
+    - common_manage_archive_hdd_mount
+    - not common_archive_hdd_mount_path.stat.exists
+
+- name: Mount archive HDD with UUID and persist in fstab
+  ansible.posix.mount:
+    path: "{{ archive_hdd_mount_path }}"
+    src: "UUID={{ common_archive_hdd_uuid.stdout | trim }}"
+    fstype: "{{ archive_hdd_fstype }}"
+    opts: "{{ archive_hdd_mount_opts }}"
+    state: mounted
+  when: common_manage_archive_hdd_mount

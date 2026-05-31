@@ -1,6 +1,6 @@
 {
-  "feature": "issue-19-ollama",
+  "feature": "issue-16-hdd-mount",
   "tier": 2,
   "phase": "done",
-  "justification": "Tier 2: new Ansible role + playbook for Ollama lightweight inference on GTX 1650"
+  "justification": "Tier 2: /dev/sda persistent mount implementation completed with verification evidence"
 }
