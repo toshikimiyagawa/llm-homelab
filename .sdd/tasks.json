@@ -6,5 +6,13 @@
     "status": "completed",
     "handoff": "specs/issue-22-antec-flux-pro-display/handoff.md",
     "blocked_reason": null
+  },
+  {
+    "id": "issue-31-lint-verification-policy",
+    "phase": "done",
+    "assigned_agent": "codex",
+    "status": "completed",
+    "handoff": "specs/issue-31-lint-verification-policy/handoff.md",
+    "blocked_reason": null
   }
 ]
