@@ -94,6 +94,35 @@ ansible-playbook playbooks/site.yml --tags vllm
 - [docs/repository-guidelines.md](docs/repository-guidelines.md)
 - [AGENTS.md](AGENTS.md)
 
+## 開発環境での lint 実行
+
+PR 前にローカルで lint を確認するため、`pip`、`yamllint`、`ansible-lint` を導入する。
+
+Ubuntu の例:
+
+```bash
+sudo apt update
+sudo apt install -y python3-pip
+sudo apt install -y yamllint ansible-lint
+```
+
+devcontainer を使う場合は、`.devcontainer/project-tools.yml` の `pip` 設定により `yamllint` と `ansible-lint` が自動導入される。
+
+`pip` で直接インストールしたい場合は、PEP 668 の制約があるため仮想環境を使う:
+
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install yamllint ansible-lint
+```
+
+実行コマンド:
+
+```bash
+yamllint -s .
+ansible-lint
+```
+
 ## ライセンス
 
 MIT等を予定。現時点では未確定。
