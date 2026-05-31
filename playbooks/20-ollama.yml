@@ -1,0 +1,8 @@
+---
+- name: Install Ollama lightweight inference engine
+  hosts: llm01
+  become: true
+  roles:
+    - role: ollama
+      tags:
+        - ollama
