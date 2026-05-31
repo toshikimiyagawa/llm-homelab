@@ -1,6 +1,6 @@
 {
-  "feature": "issue-19-ollama",
+  "feature": "issue-17-tailscale",
   "tier": 2,
-  "phase": "done",
-  "justification": "Tier 2: new Ansible role + playbook for Ollama lightweight inference on GTX 1650"
+  "phase": "implement",
+  "justification": "Tier 2: new Ansible role + playbook for Tailscale remote access on llm01"
 }

@@ -43,6 +43,30 @@ RTX Pro 6000装着後は、GPU UUIDをinventoryに記録する。
 - Tailscale
 - Antec Flux Pro温度ディスプレイ
 
+### Tailscale
+
+公式 APT リポジトリ（`https://pkgs.tailscale.com/stable/ubuntu`）からインストールする。
+`tailscaled.service` を systemd で管理し、再起動後も自動復帰する。
+
+| 項目 | 設定値 |
+|------|--------|
+| auth key 種別 | Reusable（1Password "LLM Server Infrastructure" > "Tailscale Auth Key"）|
+| Tailscale SSH | 無効（通常 sshd を使用）|
+| サブネットルーティング | 未設定（必要時に `tailscale_up_flags` で追加）|
+| ACL ポリシー | Tailscale admin console で管理（Ansible 外）|
+
+接続確認:
+
+```bash
+tailscale status
+```
+
+Ansible での適用:
+
+```bash
+ansible-playbook playbooks/07-tailscale.yml
+```
+
 Antec Flux Pro の温度表示は Linux ネイティブ実装として
 `nishtahir/antec-flux-pro-display` を採用する。
 `af-pro-display` systemd service により、CPU+GPU 温度を起動時から継続表示する。

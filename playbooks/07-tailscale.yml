@@ -1,0 +1,14 @@
+---
+- name: Configure Tailscale
+  hosts: llm01
+  become: true
+  pre_tasks:
+    - name: Fetch Tailscale auth key from 1Password
+      ansible.builtin.set_fact:
+        tailscale_auth_key: "{{ lookup('community.general.onepassword',
+                                       'Tailscale Auth Key',
+                                       vault='LLM Server Infrastructure') }}"
+      no_log: true
+      delegate_to: localhost
+  roles:
+    - tailscale

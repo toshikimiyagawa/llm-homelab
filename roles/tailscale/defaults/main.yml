@@ -1,0 +1,9 @@
+---
+tailscale_package: tailscale
+tailscale_service_name: tailscaled
+tailscale_apt_keyring_path: /usr/share/keyrings/tailscale-archive-keyring.gpg
+tailscale_apt_key_url: https://pkgs.tailscale.com/stable/ubuntu/noble.gpg
+tailscale_apt_repo: >-
+  deb [signed-by={{ tailscale_apt_keyring_path }}]
+  https://pkgs.tailscale.com/stable/ubuntu noble main
+tailscale_up_flags: ""
