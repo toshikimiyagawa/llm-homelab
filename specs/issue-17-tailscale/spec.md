@@ -1,6 +1,6 @@
 # Spec: issue-17 — Tailscale 導入
 
-**Status**: draft  
+**Status**: done  
 **Tier**: 2  
 **Issue**: #17
 
