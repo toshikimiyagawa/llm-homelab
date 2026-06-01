@@ -1,6 +1,6 @@
 {
-  "feature": "issue-17-tailscale",
-  "tier": 2,
-  "phase": "done",
-  "justification": "Tier 2: new Ansible role + playbook for Tailscale remote access on llm01"
+  "feature": "devcontainer-ansible-tooling",
+  "tier": 0,
+  "phase": "implement",
+  "justification": "Tier 0: devcontainer 向け ansible/op インストールスクリプトと project-tools.yml 更新"
 }
