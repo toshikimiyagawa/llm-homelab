@@ -1,0 +1,348 @@
+---
+- name: Deploy cert-manager HelmChart addon
+  ansible.builtin.copy:
+    dest: "{{ prometheus_manifest_dir }}/cert-manager.yaml"
+    owner: root
+    group: root
+    mode: "0600"
+    content: |
+      apiVersion: helm.cattle.io/v1
+      kind: HelmChart
+      metadata:
+        name: cert-manager
+        namespace: kube-system
+      spec:
+        repo: https://charts.jetstack.io
+        chart: cert-manager
+        version: "{{ cert_manager_version }}"
+        targetNamespace: "{{ cert_manager_namespace }}"
+        createNamespace: true
+        set:
+          crds.enabled: "true"
+  become: true
+  tags:
+    - prometheus
+
+- name: Wait for cert-manager namespace
+  ansible.builtin.command: k3s kubectl get namespace {{ cert_manager_namespace }}
+  register: cert_manager_ns
+  retries: 60
+  delay: 5
+  until: cert_manager_ns.rc == 0
+  changed_when: false
+  become: true
+  tags:
+    - prometheus
+
+- name: Wait for cert-manager webhook rollout
+  ansible.builtin.command: >-
+    k3s kubectl -n {{ cert_manager_namespace }}
+    rollout status deployment/cert-manager-webhook
+    --timeout=60s
+  register: cert_manager_rollout
+  retries: 10
+  delay: 30
+  until: cert_manager_rollout.rc == 0
+  changed_when: false
+  become: true
+  tags:
+    - prometheus
+
+- name: Wait for ClusterIssuer CRD to be established
+  ansible.builtin.command: k3s kubectl get crd clusterissuers.cert-manager.io
+  register: clusterissuer_crd
+  retries: 30
+  delay: 10
+  until: clusterissuer_crd.rc == 0
+  changed_when: false
+  become: true
+  tags:
+    - prometheus
+
+- name: Deploy Cloudflare Secret and ClusterIssuer
+  no_log: true
+  become: true
+  tags:
+    - prometheus
+  block:
+    - name: Render Cloudflare Secret and ClusterIssuer manifest
+      ansible.builtin.template:
+        src: cluster-issuer.yml.j2
+        dest: /tmp/cluster-issuer.yml
+        mode: "0600"
+
+    - name: Apply Cloudflare Secret and ClusterIssuer
+      ansible.builtin.command: k3s kubectl apply -f /tmp/cluster-issuer.yml
+      register: clusterissuer_apply
+      changed_when: >-
+        'configured' in clusterissuer_apply.stdout or
+        'created' in clusterissuer_apply.stdout
+  always:
+    - name: Remove ClusterIssuer manifest from /tmp
+      ansible.builtin.file:
+        path: /tmp/cluster-issuer.yml
+        state: absent
+
+- name: Render Prometheus PV manifest
+  ansible.builtin.template:
+    src: prometheus-pv.yml.j2
+    dest: /tmp/prometheus-pv.yml
+    mode: "0600"
+  become: true
+  tags:
+    - prometheus
+
+- name: Apply Prometheus PersistentVolume
+  ansible.builtin.command: k3s kubectl apply -f /tmp/prometheus-pv.yml
+  register: prometheus_pv_apply
+  changed_when: >-
+    'configured' in prometheus_pv_apply.stdout or
+    'created' in prometheus_pv_apply.stdout
+  become: true
+  tags:
+    - prometheus
+
+- name: Remove Prometheus PV manifest from /tmp
+  ansible.builtin.file:
+    path: /tmp/prometheus-pv.yml
+    state: absent
+  become: true
+  tags:
+    - prometheus
+
+- name: Deploy kube-prometheus-stack HelmChart addon
+  ansible.builtin.copy:
+    dest: "{{ prometheus_manifest_dir }}/kube-prometheus-stack.yaml"
+    owner: root
+    group: root
+    mode: "0600"
+    content: |
+      apiVersion: helm.cattle.io/v1
+      kind: HelmChart
+      metadata:
+        name: kube-prometheus-stack
+        namespace: kube-system
+      spec:
+        repo: https://prometheus-community.github.io/helm-charts
+        chart: kube-prometheus-stack
+        version: "{{ kube_prometheus_stack_version }}"
+        targetNamespace: "{{ prometheus_namespace }}"
+        createNamespace: true
+        valuesContent: |-
+          alertmanager:
+            enabled: false
+          grafana:
+            adminPassword: "{{ grafana_admin_password }}"
+            ingress:
+              enabled: true
+              ingressClassName: traefik
+              annotations:
+                cert-manager.io/cluster-issuer: letsencrypt-prod
+              hosts:
+                - "{{ grafana_domain }}"
+              tls:
+                - secretName: grafana-tls
+                  hosts:
+                    - "{{ grafana_domain }}"
+          prometheus:
+            ingress:
+              enabled: true
+              ingressClassName: traefik
+              annotations:
+                cert-manager.io/cluster-issuer: letsencrypt-prod
+              hosts:
+                - "{{ prometheus_domain }}"
+              tls:
+                - secretName: prometheus-tls
+                  hosts:
+                    - "{{ prometheus_domain }}"
+            prometheusSpec:
+              retention: "{{ prometheus_retention }}"
+              serviceMonitorSelectorNilUsesHelmValues: false
+              serviceMonitorSelector: {}
+              serviceMonitorNamespaceSelector: {}
+              storageSpec:
+                volumeClaimTemplate:
+                  spec:
+                    storageClassName: ""
+                    volumeName: prometheus-data-pv
+                    accessModes:
+                      - ReadWriteOnce
+                    resources:
+                      requests:
+                        storage: "{{ prometheus_storage_size }}"
+  no_log: true
+  become: true
+  tags:
+    - prometheus
+
+- name: Wait for monitoring namespace
+  ansible.builtin.command: k3s kubectl get namespace {{ prometheus_namespace }}
+  register: monitoring_ns
+  retries: 60
+  delay: 5
+  until: monitoring_ns.rc == 0
+  changed_when: false
+  become: true
+  tags:
+    - prometheus
+
+- name: Wait for Prometheus StatefulSet rollout
+  ansible.builtin.command: >-
+    k3s kubectl -n {{ prometheus_namespace }}
+    rollout status statefulset/prometheus-kube-prometheus-stack-prometheus
+    --timeout=60s
+  register: prometheus_rollout
+  retries: 15
+  delay: 30
+  until: prometheus_rollout.rc == 0
+  changed_when: false
+  become: true
+  tags:
+    - prometheus
+
+- name: Wait for Grafana Deployment rollout
+  ansible.builtin.command: >-
+    k3s kubectl -n {{ prometheus_namespace }}
+    rollout status deployment/kube-prometheus-stack-grafana
+    --timeout=60s
+  register: grafana_rollout
+  retries: 15
+  delay: 30
+  until: grafana_rollout.rc == 0
+  changed_when: false
+  become: true
+  tags:
+    - prometheus
+
+- name: Deploy DCGM Exporter HelmChart addon
+  ansible.builtin.copy:
+    dest: "{{ prometheus_manifest_dir }}/dcgm-exporter.yaml"
+    owner: root
+    group: root
+    mode: "0600"
+    content: |
+      apiVersion: helm.cattle.io/v1
+      kind: HelmChart
+      metadata:
+        name: dcgm-exporter
+        namespace: kube-system
+      spec:
+        repo: https://nvidia.github.io/dcgm-exporter/helm-charts
+        chart: dcgm-exporter
+        version: "{{ dcgm_exporter_version }}"
+        targetNamespace: "{{ prometheus_namespace }}"
+        createNamespace: false
+        valuesContent: |-
+          runtimeClassName: nvidia
+          tolerations:
+            - key: nvidia.com/gpu
+              operator: Exists
+              effect: NoSchedule
+          serviceMonitor:
+            enabled: true
+  become: true
+  tags:
+    - prometheus
+
+- name: Wait for DCGM Exporter DaemonSet rollout
+  ansible.builtin.command: >-
+    k3s kubectl -n {{ prometheus_namespace }}
+    rollout status daemonset/dcgm-exporter
+    --timeout=60s
+  register: dcgm_rollout
+  retries: 15
+  delay: 30
+  until: dcgm_rollout.rc == 0
+  changed_when: false
+  become: true
+  tags:
+    - prometheus
+
+- name: Verify Prometheus pod is Running
+  ansible.builtin.command: >-
+    k3s kubectl -n {{ prometheus_namespace }} get pod
+    -l app.kubernetes.io/name=prometheus
+    -o jsonpath='{.items[0].status.phase}'
+  register: prometheus_phase
+  failed_when: prometheus_phase.stdout != "Running"
+  changed_when: false
+  become: true
+  tags:
+    - prometheus
+    - verify
+
+- name: Verify Grafana pod is Running
+  ansible.builtin.command: >-
+    k3s kubectl -n {{ prometheus_namespace }} get pod
+    -l app.kubernetes.io/name=grafana
+    -o jsonpath='{.items[0].status.phase}'
+  register: grafana_phase
+  failed_when: grafana_phase.stdout != "Running"
+  changed_when: false
+  become: true
+  tags:
+    - prometheus
+    - verify
+
+- name: Verify node-exporter metrics are scraped by Prometheus
+  ansible.builtin.shell: |
+    set -o pipefail
+    k3s kubectl -n {{ prometheus_namespace }} exec \
+      "$(k3s kubectl -n {{ prometheus_namespace }} get pod \
+        -l app.kubernetes.io/name=prometheus \
+        -o jsonpath='{.items[0].metadata.name}')" \
+      -c prometheus -- \
+      wget -q -O- \
+      'http://localhost:9090/api/v1/query?query=up%7Bjob%3D%22node-exporter%22%7D' | \
+      grep -q '"value"'
+  args:
+    executable: /bin/bash
+  changed_when: false
+  become: true
+  tags:
+    - prometheus
+    - verify
+
+- name: Verify DCGM Exporter metrics are scraped by Prometheus
+  ansible.builtin.shell: |
+    set -o pipefail
+    k3s kubectl -n {{ prometheus_namespace }} exec \
+      "$(k3s kubectl -n {{ prometheus_namespace }} get pod \
+        -l app.kubernetes.io/name=prometheus \
+        -o jsonpath='{.items[0].metadata.name}')" \
+      -c prometheus -- \
+      wget -q -O- \
+      'http://localhost:9090/api/v1/query?query=up%7Bjob%3D%22dcgm-exporter%22%7D' | \
+      grep -q '"value"'
+  args:
+    executable: /bin/bash
+  changed_when: false
+  become: true
+  tags:
+    - prometheus
+    - verify
+
+- name: Verify Grafana TLS certificate is Ready
+  ansible.builtin.command: >-
+    k3s kubectl -n {{ prometheus_namespace }} get certificate grafana-tls
+    -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
+  register: grafana_cert
+  failed_when: grafana_cert.stdout != "True"
+  changed_when: false
+  become: true
+  tags:
+    - prometheus
+    - verify
+
+- name: Verify Prometheus TLS certificate is Ready
+  ansible.builtin.command: >-
+    k3s kubectl -n {{ prometheus_namespace }} get certificate prometheus-tls
+    -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
+  register: prometheus_cert
+  failed_when: prometheus_cert.stdout != "True"
+  changed_when: false
+  become: true
+  tags:
+    - prometheus
+    - verify

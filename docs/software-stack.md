@@ -67,6 +67,34 @@ Ansible での適用:
 ansible-playbook playbooks/07-tailscale.yml
 ```
 
+### Prometheus / Grafana / node-exporter / DCGM Exporter
+
+k3s HelmChart addon として `monitoring` namespace に導入する。
+
+| コンポーネント | chart | namespace |
+|--------------|-------|-----------|
+| cert-manager | jetstack/cert-manager v1.16.x | cert-manager |
+| kube-prometheus-stack | prometheus-community/kube-prometheus-stack v68.x | monitoring |
+| DCGM Exporter | nvidia/dcgm-exporter v3.3.x | monitoring |
+
+アクセス URL（要 Tailscale 接続）:
+
+- Grafana: `https://grafana.solvelio.com`
+- Prometheus: `https://prometheus.solvelio.com`
+
+TLS 証明書は cert-manager が Let's Encrypt DNS01 チャレンジ（Cloudflare）で自動取得する。
+
+Ansible での適用:
+
+```bash
+ansible-playbook playbooks/08-prometheus.yml --vault-password-file ~/.vault_pass
+```
+
+事前に Cloudflare で以下の DNS A レコードを手動登録する（Tailscale IP）:
+
+- `grafana.solvelio.com` → `100.107.191.51`
+- `prometheus.solvelio.com` → `100.107.191.51`
+
 Antec Flux Pro の温度表示は Linux ネイティブ実装として
 `nishtahir/antec-flux-pro-display` を採用する。
 `af-pro-display` systemd service により、CPU+GPU 温度を起動時から継続表示する。
