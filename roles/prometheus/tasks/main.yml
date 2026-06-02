@@ -38,8 +38,11 @@
   ansible.builtin.command: >-
     k3s kubectl -n {{ cert_manager_namespace }}
     rollout status deployment/cert-manager-webhook
-    --timeout=300s
+    --timeout=60s
   register: cert_manager_rollout
+  retries: 10
+  delay: 30
+  until: cert_manager_rollout.rc == 0
   changed_when: false
   become: true
   tags:
@@ -56,31 +59,26 @@
   tags:
     - prometheus
 
-- name: Render Cloudflare Secret and ClusterIssuer manifest
-  ansible.builtin.template:
-    src: cluster-issuer.yml.j2
-    dest: /tmp/cluster-issuer.yml
-    mode: "0600"
-  no_log: true
-  become: true
-  tags:
-    - prometheus
+- name: Deploy Cloudflare Secret and ClusterIssuer
+  block:
+    - name: Render Cloudflare Secret and ClusterIssuer manifest
+      ansible.builtin.template:
+        src: cluster-issuer.yml.j2
+        dest: /tmp/cluster-issuer.yml
+        mode: "0600"
 
-- name: Apply Cloudflare Secret and ClusterIssuer
-  ansible.builtin.command: k3s kubectl apply -f /tmp/cluster-issuer.yml
-  register: clusterissuer_apply
-  changed_when: >-
-    'configured' in clusterissuer_apply.stdout or
-    'created' in clusterissuer_apply.stdout
+    - name: Apply Cloudflare Secret and ClusterIssuer
+      ansible.builtin.command: k3s kubectl apply -f /tmp/cluster-issuer.yml
+      register: clusterissuer_apply
+      changed_when: >-
+        'configured' in clusterissuer_apply.stdout or
+        'created' in clusterissuer_apply.stdout
+  always:
+    - name: Remove ClusterIssuer manifest from /tmp
+      ansible.builtin.file:
+        path: /tmp/cluster-issuer.yml
+        state: absent
   no_log: true
-  become: true
-  tags:
-    - prometheus
-
-- name: Remove ClusterIssuer manifest from /tmp
-  ansible.builtin.file:
-    path: /tmp/cluster-issuer.yml
-    state: absent
   become: true
   tags:
     - prometheus
@@ -89,7 +87,7 @@
   ansible.builtin.template:
     src: prometheus-pv.yml.j2
     dest: /tmp/prometheus-pv.yml
-    mode: "0644"
+    mode: "0600"
   become: true
   tags:
     - prometheus
@@ -193,8 +191,11 @@
   ansible.builtin.command: >-
     k3s kubectl -n {{ prometheus_namespace }}
     rollout status statefulset/prometheus-kube-prometheus-stack-prometheus
-    --timeout=600s
+    --timeout=60s
   register: prometheus_rollout
+  retries: 15
+  delay: 30
+  until: prometheus_rollout.rc == 0
   changed_when: false
   become: true
   tags:
@@ -204,8 +205,11 @@
   ansible.builtin.command: >-
     k3s kubectl -n {{ prometheus_namespace }}
     rollout status deployment/kube-prometheus-stack-grafana
-    --timeout=300s
+    --timeout=60s
   register: grafana_rollout
+  retries: 15
+  delay: 30
+  until: grafana_rollout.rc == 0
   changed_when: false
   become: true
   tags:
@@ -245,8 +249,11 @@
   ansible.builtin.command: >-
     k3s kubectl -n {{ prometheus_namespace }}
     rollout status daemonset/dcgm-exporter
-    --timeout=300s
+    --timeout=60s
   register: dcgm_rollout
+  retries: 15
+  delay: 30
+  until: dcgm_rollout.rc == 0
   changed_when: false
   become: true
   tags:
