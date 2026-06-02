@@ -60,6 +60,26 @@ playbook開始時に1回だけ取得してキャッシュする。レート制�
   run_once: true
 ```
 
+## Cloudflare API Token
+
+cert-manager の DNS01 チャレンジ用に Cloudflare API Token を使用する。
+
+**最新のトークン形式（2026年時点）:**
+
+| プレフィックス | 種別 |
+|--------------|------|
+| `cfat_` | Account API Token（新形式） |
+| `cfut_` | User API Token |
+
+新規発行したトークンは `cfat_` または `cfut_` プレフィックスを持つ scannable format になる。
+`/v4/user/tokens/verify` は account token（`cfat_`）では `Invalid API Token` を返すが、
+これはエンドポイントの制約であり、トークン自体が無効なわけではない。
+実際の権限確認は `/v4/zones` へのアクセスで行う。
+
+発行方法: Cloudflare ダッシュボード → My Profile → API Tokens → Create Token → **Edit zone DNS** テンプレート
+
+格納場所: `inventory/group_vars/all/vault.yml`（Ansible Vault 暗号化）のキー名 `cloudflare_api_token`
+
 ## 禁止事項
 
 - シークレットを平文でcommitしない。

@@ -1,0 +1,6 @@
+---
+- name: Configure Prometheus monitoring stack
+  hosts: llm01
+  become: true
+  roles:
+    - prometheus

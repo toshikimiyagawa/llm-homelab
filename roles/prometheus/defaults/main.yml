@@ -1,0 +1,13 @@
+---
+prometheus_manifest_dir: /var/lib/rancher/k3s/server/manifests
+prometheus_namespace: monitoring
+cert_manager_namespace: cert-manager
+cert_manager_version: v1.16.3
+kube_prometheus_stack_version: "68.4.0"
+dcgm_exporter_version: "3.3.9"
+prometheus_retention: 30d
+prometheus_storage_size: 50Gi
+letsencrypt_email: toshi402@gmail.com
+letsencrypt_server: https://acme-v02.api.letsencrypt.org/directory
+grafana_domain: "grafana.{{ base_domain }}"
+prometheus_domain: "prometheus.{{ base_domain }}"

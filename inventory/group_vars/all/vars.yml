@@ -67,3 +67,5 @@ k3s_config:
 nvidia_device_plugin_chart_version: 0.17.1
 nvidia_device_plugin_namespace: nvidia-device-plugin
 nvidia_device_plugin_daemonset_name: nvidia-device-plugin
+
+base_domain: "solvelio.com"
