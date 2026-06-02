@@ -265,6 +265,28 @@ sudo visudo -c
 
 エージェントによる継続運用が必要な場合は、`NOPASSWD: ALL`ではなく、必要なコマンドだけに限定したsudoersへ置き換える。
 
+## 14TB HDDマウント確認
+
+`/dev/sda` は `/mnt/archive` に UUID 指定で永続マウントする。
+
+```bash
+ansible-playbook playbooks/01-system.yml
+```
+
+適用後確認:
+
+```bash
+findmnt /mnt/archive
+lsblk -f | grep -E 'sda|archive'
+sudo mount -a
+```
+
+期待値:
+
+- `/mnt/archive` が `UUID=...` に対応する ext4 としてマウントされている
+- `mount -a` でエラーが発生しない
+- 再起動後も `findmnt /mnt/archive` で同じマウントが確認できる
+
 ## ヘルスチェック
 
 各Podにliveness/readiness probeを設定する。
