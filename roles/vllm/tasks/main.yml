@@ -32,6 +32,7 @@
       ansible.builtin.file:
         path: /tmp/vllm-deployment.yml
         state: absent
+      become: true
 
 - name: Deploy vLLM Service
   become: true
@@ -55,6 +56,7 @@
       ansible.builtin.file:
         path: /tmp/vllm-service.yml
         state: absent
+      become: true
 
 - name: Deploy vLLM Ingress
   become: true
@@ -78,6 +80,7 @@
       ansible.builtin.file:
         path: /tmp/vllm-ingress.yml
         state: absent
+      become: true
 
 - name: Wait for vLLM Deployment rollout
   ansible.builtin.command: >-

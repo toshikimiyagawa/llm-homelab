@@ -15,6 +15,8 @@ spec:
         app: vllm
     spec:
       runtimeClassName: nvidia
+      nodeSelector:
+        kubernetes.io/hostname: "{{ expected_hostname }}"
       containers:
         - name: vllm
           image: "vllm/vllm-openai:{{ vllm_image_tag }}"
