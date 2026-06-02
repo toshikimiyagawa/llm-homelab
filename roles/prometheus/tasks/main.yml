@@ -60,6 +60,10 @@
     - prometheus
 
 - name: Deploy Cloudflare Secret and ClusterIssuer
+  no_log: true
+  become: true
+  tags:
+    - prometheus
   block:
     - name: Render Cloudflare Secret and ClusterIssuer manifest
       ansible.builtin.template:
@@ -78,10 +82,6 @@
       ansible.builtin.file:
         path: /tmp/cluster-issuer.yml
         state: absent
-  no_log: true
-  become: true
-  tags:
-    - prometheus
 
 - name: Render Prometheus PV manifest
   ansible.builtin.template:
