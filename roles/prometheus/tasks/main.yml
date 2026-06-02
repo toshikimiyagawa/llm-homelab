@@ -327,3 +327,15 @@
   tags:
     - prometheus
     - verify
+
+- name: Verify Prometheus TLS certificate is Ready
+  ansible.builtin.command: >-
+    k3s kubectl -n {{ prometheus_namespace }} get certificate prometheus-tls
+    -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
+  register: prometheus_cert
+  failed_when: prometheus_cert.stdout != "True"
+  changed_when: false
+  become: true
+  tags:
+    - prometheus
+    - verify
