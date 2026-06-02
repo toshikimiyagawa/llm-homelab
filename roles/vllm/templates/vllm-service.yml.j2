@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm
+  namespace: {{ vllm_namespace }}
+spec:
+  selector:
+    app: vllm
+  ports:
+    - port: 80
+      targetPort: {{ vllm_port }}
+  type: ClusterIP

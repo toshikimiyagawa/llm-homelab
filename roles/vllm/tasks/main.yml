@@ -1,0 +1,149 @@
+---
+- name: Ensure vllm namespace exists
+  ansible.builtin.command: k3s kubectl create namespace {{ vllm_namespace }}
+  register: vllm_ns_result
+  changed_when: vllm_ns_result.rc == 0
+  failed_when: >-
+    vllm_ns_result.rc != 0 and
+    'already exists' not in vllm_ns_result.stderr
+  become: true
+  tags:
+    - vllm
+
+- name: Deploy vLLM Deployment
+  become: true
+  tags:
+    - vllm
+  block:
+    - name: Render vLLM Deployment manifest
+      ansible.builtin.template:
+        src: vllm-deployment.yml.j2
+        dest: /tmp/vllm-deployment.yml
+        mode: "0600"
+
+    - name: Apply vLLM Deployment
+      ansible.builtin.command: k3s kubectl apply -f /tmp/vllm-deployment.yml
+      register: vllm_deployment_apply
+      changed_when: >-
+        'configured' in vllm_deployment_apply.stdout or
+        'created' in vllm_deployment_apply.stdout
+  always:
+    - name: Remove vLLM Deployment manifest from /tmp
+      ansible.builtin.file:
+        path: /tmp/vllm-deployment.yml
+        state: absent
+
+- name: Deploy vLLM Service
+  become: true
+  tags:
+    - vllm
+  block:
+    - name: Render vLLM Service manifest
+      ansible.builtin.template:
+        src: vllm-service.yml.j2
+        dest: /tmp/vllm-service.yml
+        mode: "0600"
+
+    - name: Apply vLLM Service
+      ansible.builtin.command: k3s kubectl apply -f /tmp/vllm-service.yml
+      register: vllm_service_apply
+      changed_when: >-
+        'configured' in vllm_service_apply.stdout or
+        'created' in vllm_service_apply.stdout
+  always:
+    - name: Remove vLLM Service manifest from /tmp
+      ansible.builtin.file:
+        path: /tmp/vllm-service.yml
+        state: absent
+
+- name: Deploy vLLM Ingress
+  become: true
+  tags:
+    - vllm
+  block:
+    - name: Render vLLM Ingress manifest
+      ansible.builtin.template:
+        src: vllm-ingress.yml.j2
+        dest: /tmp/vllm-ingress.yml
+        mode: "0600"
+
+    - name: Apply vLLM Ingress
+      ansible.builtin.command: k3s kubectl apply -f /tmp/vllm-ingress.yml
+      register: vllm_ingress_apply
+      changed_when: >-
+        'configured' in vllm_ingress_apply.stdout or
+        'created' in vllm_ingress_apply.stdout
+  always:
+    - name: Remove vLLM Ingress manifest from /tmp
+      ansible.builtin.file:
+        path: /tmp/vllm-ingress.yml
+        state: absent
+
+- name: Wait for vLLM Deployment rollout
+  ansible.builtin.command: >-
+    k3s kubectl -n {{ vllm_namespace }}
+    rollout status deployment/vllm
+    --timeout=120s
+  register: vllm_rollout
+  retries: 15
+  delay: 120
+  until: vllm_rollout.rc == 0
+  changed_when: false
+  become: true
+  tags:
+    - vllm
+
+- name: Verify vLLM pod is Running
+  ansible.builtin.command: >-
+    k3s kubectl -n {{ vllm_namespace }} get pod
+    -l app=vllm
+    -o jsonpath='{.items[0].status.phase}'
+  register: vllm_phase
+  failed_when: vllm_phase.stdout != "Running"
+  changed_when: false
+  become: true
+  tags:
+    - vllm
+    - verify
+
+- name: Verify GPU UUID is set in Deployment
+  ansible.builtin.shell: |
+    set -o pipefail
+    k3s kubectl -n {{ vllm_namespace }} get deployment vllm -o json | \
+      grep -q '{{ vllm_gpu_uuid }}'
+  args:
+    executable: /bin/bash
+  changed_when: false
+  become: true
+  tags:
+    - vllm
+    - verify
+
+- name: Verify vLLM API responds to /v1/models
+  ansible.builtin.shell: |
+    set -o pipefail
+    k3s kubectl -n {{ vllm_namespace }} exec \
+      "$(k3s kubectl -n {{ vllm_namespace }} get pod \
+        -l app=vllm \
+        -o jsonpath='{.items[0].metadata.name}')" \
+      -- wget -q -O- http://localhost:{{ vllm_port }}/v1/models | \
+      grep -q '"object":"list"'
+  args:
+    executable: /bin/bash
+  changed_when: false
+  become: true
+  tags:
+    - vllm
+    - verify
+
+- name: Verify vLLM TLS certificate is Ready
+  ansible.builtin.command: >-
+    k3s kubectl -n {{ vllm_namespace }} get certificate vllm-tls
+    -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
+  register: vllm_cert
+  failed_when: vllm_cert.stdout != "True"
+  changed_when: false
+  become: true
+  tags:
+    - vllm
+    - verify

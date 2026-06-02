@@ -1,0 +1,10 @@
+---
+vllm_namespace: vllm
+vllm_image_tag: latest
+vllm_model: Qwen/Qwen3-30B-A3B
+vllm_served_model_name: default
+vllm_gpu_uuid: GPU-079e606a-926e-e5d4-dcd3-6322c089ef8a
+vllm_models_host_path: /opt/models
+vllm_domain: "vllm.{{ base_domain }}"
+vllm_gpu_memory_utilization: "0.90"
+vllm_port: 8000

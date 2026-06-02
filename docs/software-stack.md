@@ -43,6 +43,31 @@ RTX Pro 6000装着後は、GPU UUIDをinventoryに記録する。
 - Tailscale
 - Antec Flux Pro温度ディスプレイ
 
+### vLLM
+
+k3s Deployment として `vllm` namespace に導入する。
+
+| 項目 | 設定値 |
+|------|--------|
+| image | `vllm/vllm-openai:latest` |
+| GPU | RTX Pro 6000（UUID: `GPU-079e606a-926e-e5d4-dcd3-6322c089ef8a`） |
+| モデル | `/opt/models` に手動配置（例: `Qwen/Qwen3-30B-A3B`） |
+| API | OpenAI 互換（`/v1/chat/completions`, `/v1/models`） |
+
+アクセス URL（要 Tailscale 接続）:
+
+- API: `https://vllm.solvelio.com/v1`
+
+事前に Cloudflare で以下の DNS A レコードを手動登録する（Tailscale IP）:
+
+- `vllm.solvelio.com` → `100.107.191.51`
+
+Ansible での適用:
+
+```bash
+ansible-playbook playbooks/09-vllm.yml --vault-password-file ~/.vault_pass
+```
+
 ### Tailscale
 
 公式 APT リポジトリ（`https://pkgs.tailscale.com/stable/ubuntu`）からインストールする。

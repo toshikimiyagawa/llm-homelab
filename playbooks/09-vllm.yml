@@ -1,0 +1,7 @@
+---
+- name: Deploy vLLM inference server
+  hosts: llm_servers
+  become: true
+  gather_facts: true
+  roles:
+    - vllm

@@ -1,0 +1,55 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm
+  namespace: {{ vllm_namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vllm
+  template:
+    metadata:
+      labels:
+        app: vllm
+    spec:
+      runtimeClassName: nvidia
+      containers:
+        - name: vllm
+          image: "vllm/vllm-openai:{{ vllm_image_tag }}"
+          args:
+            - "--model"
+            - "{{ vllm_model }}"
+            - "--served-model-name"
+            - "{{ vllm_served_model_name }}"
+            - "--gpu-memory-utilization"
+            - "{{ vllm_gpu_memory_utilization }}"
+            - "--port"
+            - "{{ vllm_port | string }}"
+          env:
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: "{{ vllm_gpu_uuid }}"
+            - name: HF_HOME
+              value: /models
+          ports:
+            - containerPort: {{ vllm_port }}
+          resources:
+            limits:
+              nvidia.com/gpu: "1"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ vllm_port }}
+            initialDelaySeconds: 300
+            periodSeconds: 30
+            failureThreshold: 20
+          volumeMounts:
+            - name: models
+              mountPath: /models
+              readOnly: true
+      volumes:
+        - name: models
+          hostPath:
+            path: {{ vllm_models_host_path }}
+            type: Directory
