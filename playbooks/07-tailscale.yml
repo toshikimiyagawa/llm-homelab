@@ -1,0 +1,6 @@
+---
+- name: Configure Tailscale
+  hosts: llm01
+  become: true
+  roles:
+    - tailscale
