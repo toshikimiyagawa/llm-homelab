@@ -21,6 +21,6 @@ post_install:
   - name: install ansible-core via uv
     run: uv tool install ansible-core
   - name: install ansible collections
-    run: ansible-galaxy collection install -r /workspace/requirements.yml
+    run: PATH="/home/ubuntu/.local/bin:$PATH" ANSIBLE_HOME=/home/ubuntu/.ansible ansible-galaxy collection install -r /workspace/requirements.yml
 #
 # For complex setup, you can also create .devcontainer/post-install.sh (must be executable).
