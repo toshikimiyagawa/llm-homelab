@@ -5,14 +5,14 @@
 
 ## Intent
 
-vLLM の max_model_len を 81920 に引き上げ、opencode が送る max_tokens=32000 と長めのプロンプトが重なっても超過しないようにする。
-プロジェクトルートの opencode.json（未追跡ファイル）を削除し、devcontainer グローバル設定のみで管理する。
+vLLM の --max-model-len 81920 指定を削除する。
+Qwen3-32B の max_position_embeddings=40960 を超える値は設定不可で Pod が起動失敗するため。
+opencode の token 超過問題は devcontainer グローバル設定の limit.output: 8192 で対処する。
 
 ## Acceptance Criteria
 
-1. `roles/vllm/defaults/main.yml` に `vllm_max_model_len: 81920` が定義される。
-2. `roles/vllm/templates/vllm-deployment.yml.j2` の args に `--max-model-len` と `{{ vllm_max_model_len }}` が含まれる。
-3. プロジェクトルートに `opencode.json` が存在しない。
+1. `roles/vllm/templates/vllm-deployment.yml.j2` に `--max-model-len` が含まれない。
+2. `roles/vllm/defaults/main.yml` に `vllm_max_model_len` が含まれない。
 
 ## Verification
 
