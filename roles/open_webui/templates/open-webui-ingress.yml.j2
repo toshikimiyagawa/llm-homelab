@@ -1,0 +1,25 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ open_webui_app_name }}
+  namespace: {{ open_webui_namespace }}
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: "{{ open_webui_domain }}"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ open_webui_app_name }}
+                port:
+                  number: {{ open_webui_service_port }}
+  tls:
+    - secretName: open-webui-tls
+      hosts:
+        - "{{ open_webui_domain }}"

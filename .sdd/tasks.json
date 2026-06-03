@@ -46,5 +46,13 @@
     "status": "completed",
     "handoff": null,
     "blocked_reason": null
+  },
+  {
+    "id": "issue-20-open-webui",
+    "phase": "implement",
+    "assigned_agent": "codex",
+    "status": "completed",
+    "handoff": "specs/issue-20-open-webui/handoff.md",
+    "blocked_reason": null
   }
 ]

@@ -1,0 +1,169 @@
+---
+- name: Ensure Open WebUI namespace exists
+  ansible.builtin.command: k3s kubectl create namespace {{ open_webui_namespace }}
+  register: open_webui_ns_result
+  changed_when: open_webui_ns_result.rc == 0
+  failed_when: >-
+    open_webui_ns_result.rc != 0 and
+    'already exists' not in open_webui_ns_result.stderr
+  become: true
+  tags:
+    - open_webui
+
+- name: Ensure Open WebUI data directory exists
+  ansible.builtin.file:
+    path: "{{ open_webui_data_path }}"
+    state: directory
+    owner: "{{ open_webui_data_owner }}"
+    group: "{{ open_webui_data_group }}"
+    mode: "{{ open_webui_data_mode }}"
+  become: true
+  tags:
+    - open_webui
+
+- name: Deploy Open WebUI Deployment
+  become: true
+  tags:
+    - open_webui
+  block:
+    - name: Render Open WebUI Deployment manifest
+      ansible.builtin.template:
+        src: open-webui-deployment.yml.j2
+        dest: /tmp/open-webui-deployment.yml
+        mode: "0600"
+      changed_when: false
+
+    - name: Apply Open WebUI Deployment
+      ansible.builtin.command: k3s kubectl apply -f /tmp/open-webui-deployment.yml
+      register: open_webui_deployment_apply
+      changed_when: "'configured' in open_webui_deployment_apply.stdout or 'created' in open_webui_deployment_apply.stdout"
+  always:
+    - name: Remove Open WebUI Deployment manifest from /tmp
+      ansible.builtin.file:
+        path: /tmp/open-webui-deployment.yml
+        state: absent
+      changed_when: false
+      become: true
+
+- name: Deploy Open WebUI Service
+  become: true
+  tags:
+    - open_webui
+  block:
+    - name: Render Open WebUI Service manifest
+      ansible.builtin.template:
+        src: open-webui-service.yml.j2
+        dest: /tmp/open-webui-service.yml
+        mode: "0600"
+      changed_when: false
+
+    - name: Apply Open WebUI Service
+      ansible.builtin.command: k3s kubectl apply -f /tmp/open-webui-service.yml
+      register: open_webui_service_apply
+      changed_when: "'configured' in open_webui_service_apply.stdout or 'created' in open_webui_service_apply.stdout"
+  always:
+    - name: Remove Open WebUI Service manifest from /tmp
+      ansible.builtin.file:
+        path: /tmp/open-webui-service.yml
+        state: absent
+      changed_when: false
+      become: true
+
+- name: Deploy Open WebUI Ingress
+  become: true
+  tags:
+    - open_webui
+  block:
+    - name: Render Open WebUI Ingress manifest
+      ansible.builtin.template:
+        src: open-webui-ingress.yml.j2
+        dest: /tmp/open-webui-ingress.yml
+        mode: "0600"
+      changed_when: false
+
+    - name: Apply Open WebUI Ingress
+      ansible.builtin.command: k3s kubectl apply -f /tmp/open-webui-ingress.yml
+      register: open_webui_ingress_apply
+      changed_when: "'configured' in open_webui_ingress_apply.stdout or 'created' in open_webui_ingress_apply.stdout"
+  always:
+    - name: Remove Open WebUI Ingress manifest from /tmp
+      ansible.builtin.file:
+        path: /tmp/open-webui-ingress.yml
+        state: absent
+      changed_when: false
+      become: true
+
+- name: Wait for Open WebUI Deployment rollout
+  ansible.builtin.command: >-
+    k3s kubectl -n {{ open_webui_namespace }}
+    rollout status deployment/{{ open_webui_app_name }}
+    --timeout={{ open_webui_rollout_timeout }}
+  register: open_webui_rollout
+  changed_when: false
+  become: true
+  tags:
+    - open_webui
+    - verify
+
+- name: Verify Open WebUI pod is Running
+  ansible.builtin.command: >-
+    k3s kubectl -n {{ open_webui_namespace }} get pod
+    -l app={{ open_webui_app_name }}
+    -o jsonpath='{.items[0].status.phase}'
+  register: open_webui_phase
+  failed_when: open_webui_phase.stdout != "Running"
+  changed_when: false
+  become: true
+  tags:
+    - open_webui
+    - verify
+
+- name: Verify Open WebUI backend environment is configured
+  ansible.builtin.shell: |
+    set -o pipefail
+    k3s kubectl -n {{ open_webui_namespace }} get deployment {{ open_webui_app_name }} -o json |       jq -e '
+        [.spec.template.spec.containers[0].env[] | {(.name): .value}] | add |
+        .OPENAI_API_BASE_URLS == "{{ open_webui_vllm_base_url }}" and
+        .OLLAMA_BASE_URLS == "{{ open_webui_ollama_base_url }}"
+      '
+  args:
+    executable: /bin/bash
+  changed_when: false
+  become: true
+  tags:
+    - open_webui
+    - verify
+
+- name: Verify Ollama is reachable from the Open WebUI pod
+  ansible.builtin.shell: |
+    set -o pipefail
+    pod="$(k3s kubectl -n {{ open_webui_namespace }} get pod       -l app={{ open_webui_app_name }}       -o jsonpath='{.items[0].metadata.name}')"
+    script='
+    import json
+    import os
+    import urllib.request
+
+    data = urllib.request.urlopen(os.environ["OLLAMA_URL"], timeout=10).read()
+    json.loads(data)
+    '
+    k3s kubectl -n {{ open_webui_namespace }} exec "$pod" --       env OLLAMA_URL="{{ open_webui_ollama_base_url }}/api/tags" python -c "$script"
+  args:
+    executable: /bin/bash
+  register: open_webui_ollama_reachability
+  changed_when: false
+  become: true
+  tags:
+    - open_webui
+    - verify
+
+- name: Verify Open WebUI TLS certificate is Ready
+  ansible.builtin.command: >-
+    k3s kubectl -n {{ open_webui_namespace }} get certificate open-webui-tls
+    -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
+  register: open_webui_cert
+  failed_when: open_webui_cert.stdout != "True"
+  changed_when: false
+  become: true
+  tags:
+    - open_webui
+    - verify

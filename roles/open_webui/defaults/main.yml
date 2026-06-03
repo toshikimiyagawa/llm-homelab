@@ -1,0 +1,22 @@
+---
+open_webui_namespace: open-webui
+open_webui_app_name: open-webui
+open_webui_image: ghcr.io/open-webui/open-webui:main
+open_webui_domain: "open-webui.{{ base_domain }}"
+open_webui_data_path: /opt/open-webui-data
+open_webui_data_owner: "0"
+open_webui_data_group: "0"
+open_webui_data_mode: "0755"
+open_webui_container_port: 8080
+open_webui_service_port: 80
+open_webui_replicas: 1
+open_webui_vllm_base_url: https://vllm.solvelio.com/v1
+open_webui_openai_api_keys: none
+open_webui_ollama_base_url: http://llm01:11434
+open_webui_cpu_request: 250m
+open_webui_memory_request: 512Mi
+open_webui_cpu_limit: "2"
+open_webui_memory_limit: 2Gi
+open_webui_rollout_timeout: 300s
+open_webui_host_network: true
+open_webui_ollama_host_alias_ip: 127.0.0.1

@@ -1,6 +1,6 @@
 {
-  "feature": "issue-16-hdd-mount",
+  "feature": "issue-20-open-webui",
   "tier": 2,
-  "phase": "done",
-  "justification": "Tier 2: /dev/sda persistent mount implementation completed with verification evidence"
+  "phase": "verify",
+  "justification": "Tier 2: Open WebUI implementation completed; awaiting SDD verification"
 }

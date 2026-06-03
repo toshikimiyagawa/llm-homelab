@@ -22,3 +22,6 @@
 
 - name: Install Ollama lightweight inference engine
   ansible.builtin.import_playbook: 20-ollama.yml
+
+- name: Deploy Open WebUI browser interface
+  ansible.builtin.import_playbook: 21-open-webui.yml
