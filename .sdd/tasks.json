@@ -57,10 +57,10 @@
   },
   {
     "id": "issue-20-open-webui",
-    "phase": "verify",
+    "phase": "done",
     "assigned_agent": "codex",
-    "status": "blocked",
+    "status": "completed",
     "handoff": "specs/issue-20-open-webui/handoff.md",
-    "blocked_reason": "Awaiting final SDD verification after issue-52 resolver fix was merged."
+    "blocked_reason": null
   }
 ]
