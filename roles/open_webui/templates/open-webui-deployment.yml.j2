@@ -37,6 +37,8 @@ spec:
               value: "true"
             - name: OLLAMA_BASE_URLS
               value: "{{ open_webui_ollama_base_url }}"
+            - name: DEFAULT_MODEL_PARAMS
+              value: '{{ open_webui_default_model_params | to_json }}'
             - name: WEBUI_NAME
               value: LLM Homelab
           ports:

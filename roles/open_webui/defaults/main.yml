@@ -13,6 +13,8 @@ open_webui_replicas: 1
 open_webui_vllm_base_url: https://vllm.solvelio.com/v1
 open_webui_openai_api_keys: none
 open_webui_ollama_base_url: http://llm01:11434
+open_webui_default_model_params:
+  max_tokens: 8192
 open_webui_cpu_request: 250m
 open_webui_memory_request: 512Mi
 open_webui_cpu_limit: "2"

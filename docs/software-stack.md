@@ -84,6 +84,8 @@ Open WebUI のユーザー、設定、SQLite データベースは `/opt/open-we
 
 Ollama は認証なし API を外部公開しないため `127.0.0.1:11434` のみに bind する。Open WebUI pod は `hostNetwork: true` と `llm01 to 127.0.0.1` の hostAlias により、Ollama の bind 設定を変更せずに接続する。
 
+Open WebUI の全体デフォルト推論パラメータは `DEFAULT_MODEL_PARAMS` で与え、`max_tokens` は `8192` に固定する。これは `vLLM` の `max_model_len=40960` を長い会話履歴で超えにくくするための初期値で、必要な場合は Open WebUI のモデルごとの設定で上書きする。
+
 アクセス URL（要 Tailscale 接続）:
 
 - UI: `https://open-webui.solvelio.com`

@@ -41,7 +41,7 @@ BIOS必須設定:
 - Re-Size BAR Support: Enabled
 - IOMMU: Enabled
 
-### 構築前プリフライト
+## 構築前プリフライト
 
 Ansibleを流す前に、Mac側から以下を確認する。
 
@@ -307,6 +307,16 @@ sudo mount -a
 | シークレット | 高 | 1Password |
 | Prometheusデータ | 低 | 喪失許容 |
 | LLMモデル本体 | 低 | 再ダウンロード |
+
+## Open WebUI の長文対策
+
+Open WebUI から vLLM の Qwen を使う場合、`max_tokens=32000` のような大きい出力上限を長い会話履歴に対して使うと、`vllm.exceptions.VLLMValidationError` で失敗する。
+
+回避策:
+
+1. Open WebUI の `DEFAULT_MODEL_PARAMS` で `max_tokens` を `8192` に保つ。
+2. 長い会話では、新しいチャットを開始するか、履歴を要約してから続ける。
+3. モデルごとに出力上限を変えたい場合は、Open WebUI のモデル設定で上書きする。
 
 ## 緊急対応
 
