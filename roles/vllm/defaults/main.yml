@@ -8,6 +8,7 @@ vllm_models_host_path: /opt/models
 vllm_domain: "vllm.{{ base_domain }}"
 vllm_gpu_memory_utilization: "0.90"
 vllm_port: 8000
+vllm_model_dir: Qwen3-32B
 vllm_max_model_len: 131072
 vllm_rope_scaling_dict:
   rope_type: yarn
