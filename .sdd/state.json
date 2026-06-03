@@ -1,6 +1,6 @@
 {
-  "feature": "issue-20-open-webui",
-  "tier": 2,
+  "feature": "issue-46-dcgm-exporter-version",
+  "tier": 1,
   "phase": "done",
-  "justification": "Tier 2: Open WebUI implementation verified against all acceptance criteria"
+  "justification": "Tier 1: DCGM Exporter chart version fix verified by static tests and playbooks/08-prometheus.yml"
 }
