@@ -28,6 +28,7 @@ post_install:
     run: |
       cat > /home/ubuntu/opencode.json <<'EOF'
       {
+        "model": "vllm/qwen3-32b",
         "providers": {
           "vllm": {
             "npm": "@ai-sdk/openai-compatible",
