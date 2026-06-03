@@ -1,5 +1,6 @@
 {
-  "tier": 0,
+  "feature": "issue-46-dcgm-exporter-version",
+  "tier": 1,
   "phase": "done",
-  "note": "no active feature"
+  "justification": "Tier 1: DCGM Exporter chart version fix verified by static tests and playbooks/08-prometheus.yml"
 }
