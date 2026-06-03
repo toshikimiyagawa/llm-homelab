@@ -34,8 +34,6 @@ spec:
             - "{{ vllm_port | string }}"
             - "--max-model-len"
             - "{{ vllm_max_model_len | string }}"
-            - "--rope-scaling"
-            - '{{ vllm_rope_scaling }}'
             - "--enable-auto-tool-choice"
             - "--tool-call-parser"
             - "hermes"
