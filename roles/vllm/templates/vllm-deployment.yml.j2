@@ -32,6 +32,8 @@ spec:
             - "{{ vllm_gpu_memory_utilization }}"
             - "--port"
             - "{{ vllm_port | string }}"
+            - "--max-model-len"
+            - "{{ vllm_max_model_len | string }}"
             - "--enable-auto-tool-choice"
             - "--tool-call-parser"
             - "hermes"
