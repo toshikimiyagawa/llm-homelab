@@ -25,10 +25,12 @@ post_install:
     run: curl -fsSL https://opencode.ai/install | bash
   - name: configure opencode for vLLM
     run: |
-      cat > /home/ubuntu/opencode.json <<'EOF'
+      mkdir -p /home/ubuntu/.config/opencode
+      cat > /home/ubuntu/.config/opencode/opencode.json <<'EOF'
       {
+        "$schema": "https://opencode.ai/config.json",
         "model": "vllm/qwen3-32b",
-        "providers": {
+        "provider": {
           "vllm": {
             "npm": "@ai-sdk/openai-compatible",
             "name": "vLLM",
@@ -38,7 +40,11 @@ post_install:
             },
             "models": {
               "qwen3-32b": {
-                "name": "Qwen3-32B"
+                "name": "Qwen3-32B",
+                "limit": {
+                  "context": 40960,
+                  "output": 8192
+                }
               }
             }
           }
