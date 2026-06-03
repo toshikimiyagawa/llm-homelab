@@ -5,6 +5,8 @@ metadata:
   name: {{ open_webui_app_name }}
   namespace: {{ open_webui_namespace }}
 spec:
+  strategy:
+    type: Recreate
   replicas: {{ open_webui_replicas }}
   selector:
     matchLabels:
