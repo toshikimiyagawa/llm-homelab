@@ -4,3 +4,10 @@ common_manage_timezone: true
 common_manage_model_directories: true
 common_manage_networkd_wait_online: true
 common_manage_archive_hdd_mount: true
+common_manage_resolved_domain_dns: true
+common_resolved_domain: solvelio.com
+common_resolved_dns_servers:
+  - 1.1.1.1
+  - 8.8.8.8
+common_resolved_dropin_dir: /etc/systemd/resolved.conf.d
+common_resolved_dropin_path: /etc/systemd/resolved.conf.d/solvelio.conf

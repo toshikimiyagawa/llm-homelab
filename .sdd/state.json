@@ -2,5 +2,5 @@
   "feature": "issue-20-open-webui",
   "tier": 2,
   "phase": "verify",
-  "justification": "Tier 2: Open WebUI implementation completed; awaiting SDD verification"
+  "justification": "Tier 2: Open WebUI implementation completed; awaiting final SDD verification after issue-52 resolver fix"
 }

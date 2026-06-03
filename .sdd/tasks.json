@@ -48,11 +48,19 @@
     "blocked_reason": null
   },
   {
+    "id": "issue-52-resolver",
+    "phase": "done",
+    "assigned_agent": "codex",
+    "status": "completed",
+    "handoff": "specs/issue-52-resolver/handoff.md",
+    "blocked_reason": null
+  },
+  {
     "id": "issue-20-open-webui",
     "phase": "verify",
     "assigned_agent": "codex",
     "status": "blocked",
     "handoff": "specs/issue-20-open-webui/handoff.md",
-    "blocked_reason": "SDD reviewer failed AC5: Cloudflare DNS record is registered, but llm01 resolver via 192.168.0.1 returns no A record for open-webui.solvelio.com. Tracked by GitHub issue #52."
+    "blocked_reason": "Awaiting final SDD verification after issue-52 resolver fix was merged."
   }
 ]
