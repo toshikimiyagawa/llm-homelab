@@ -69,3 +69,6 @@ nvidia_device_plugin_namespace: nvidia-device-plugin
 nvidia_device_plugin_daemonset_name: nvidia-device-plugin
 
 base_domain: "solvelio.com"
+
+vllm_model: /models/Qwen3-32B
+vllm_served_model_name: qwen3-32b

@@ -83,6 +83,17 @@
         path: /tmp/cluster-issuer.yml
         state: absent
 
+- name: Ensure prometheus-data directory has correct ownership
+  ansible.builtin.file:
+    path: /opt/prometheus-data
+    state: directory
+    owner: "1000"
+    group: "2000"
+    mode: "0755"
+  become: true
+  tags:
+    - prometheus
+
 - name: Render Prometheus PV manifest
   ansible.builtin.template:
     src: prometheus-pv.yml.j2
