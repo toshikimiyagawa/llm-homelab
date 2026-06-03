@@ -1,6 +1,6 @@
 {
-  "feature": "issue-66-open-webui-max-tokens",
+  "feature": "issue-73-opencode-token-limits",
   "tier": 1,
-  "phase": "done",
-  "justification": "Tier 1: Open WebUI default max_tokens cap and long-conversation docs verified by static tests and live playbook"
+  "phase": "implement",
+  "justification": "Tier 1: localized devcontainer opencode config bugfix with static tests"
 }
