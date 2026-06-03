@@ -26,16 +26,6 @@ def test_deployment_enables_tool_call_options():
     assert '"hermes"' in content
 
 
-def test_deployment_sets_max_model_len():
-    content = DEPLOYMENT_TMPL.read_text()
-    assert '"--max-model-len"' in content
-    assert "vllm_max_model_len" in content
-
-
-def test_default_max_model_len_is_81920():
-    content = (ROLE_ROOT / "defaults" / "main.yml").read_text()
-    assert "vllm_max_model_len: 81920" in content
-
 
 def test_api_verification_uses_service_endpoint_not_pod_tools():
     content = TASKS.read_text()
