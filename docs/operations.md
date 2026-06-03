@@ -41,7 +41,7 @@ BIOS必須設定:
 - Re-Size BAR Support: Enabled
 - IOMMU: Enabled
 
-## 構築前プリフライト
+### 構築前プリフライト
 
 Ansibleを流す前に、Mac側から以下を確認する。
 
