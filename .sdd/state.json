@@ -1,5 +1,6 @@
 {
-  "tier": 0,
-  "phase": "done",
-  "note": "no active feature"
+  "feature": "fix-vllm-max-model-len",
+  "tier": 1,
+  "phase": "implement",
+  "justification": "Tier 1: localized vLLM config fix + untracked file removal"
 }
