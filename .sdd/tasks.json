@@ -53,6 +53,6 @@
     "assigned_agent": "codex",
     "status": "blocked",
     "handoff": "specs/issue-20-open-webui/handoff.md",
-    "blocked_reason": "SDD reviewer failed AC5: open-webui.solvelio.com does not resolve. Created GitHub issue #51 to register the DNS record, then rerun AC5 verification."
+    "blocked_reason": "SDD reviewer failed AC5: Cloudflare DNS record is registered, but llm01 resolver via 192.168.0.1 returns no A record for open-webui.solvelio.com. Tracked by GitHub issue #52."
   }
 ]
