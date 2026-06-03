@@ -9,9 +9,8 @@ pip:
   - yamllint
   - ansible-lint
 #
-# npm:
-#   - prettier
-#   - eslint@9
+npm:
+  - "@ai-sdk/openai-compatible"
 #
 binary:
   - name: op
