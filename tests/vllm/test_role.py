@@ -27,6 +27,20 @@ def test_deployment_enables_tool_call_options():
 
 
 
+def test_deployment_sets_yarn_rope_scaling_for_128k_context():
+    content = DEPLOYMENT_TMPL.read_text()
+    assert '"--max-model-len"' in content
+    assert '"--rope-scaling"' in content
+    assert "vllm_max_model_len" in content
+    assert "vllm_rope_scaling" in content
+
+
+def test_default_max_model_len_and_rope_scaling():
+    content = (ROLE_ROOT / "defaults" / "main.yml").read_text()
+    assert "vllm_max_model_len: 131072" in content
+    assert "yarn" in content
+
+
 def test_api_verification_uses_service_endpoint_not_pod_tools():
     content = TASKS.read_text()
     assert "curl -fsS" in content
