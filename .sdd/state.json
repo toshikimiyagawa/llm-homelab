@@ -1,6 +1,6 @@
 {
   "feature": "issue-66-open-webui-max-tokens",
   "tier": 1,
-  "phase": "implement",
-  "justification": "Tier 1: adjust Open WebUI max_tokens defaults and document long-conversation behavior"
+  "phase": "done",
+  "justification": "Tier 1: Open WebUI default max_tokens cap and long-conversation docs verified by static tests and live playbook"
 }
