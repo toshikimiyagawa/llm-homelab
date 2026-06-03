@@ -1,6 +1,5 @@
 {
-  "feature": "issue-64-vllm-recreate",
-  "tier": 1,
-  "phase": "implement",
-  "justification": "Tier 1: localized vLLM Deployment rollout bugfix with static tests"
+  "tier": 0,
+  "phase": "done",
+  "note": "no active feature"
 }
