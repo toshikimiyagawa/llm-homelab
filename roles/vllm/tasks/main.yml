@@ -1,12 +1,21 @@
 ---
+- name: Read current model config.json
+  ansible.builtin.slurp:
+    src: "{{ vllm_models_host_path }}/{{ vllm_model_dir }}/config.json"
+  register: _vllm_config_raw
+  become: true
+  tags:
+    - vllm
+
 - name: Configure YaRN RoPE scaling in model config.json
   ansible.builtin.copy:
-    dest: "{{ vllm_models_host_path }}/{{ vllm_served_model_name | capitalize }}/config.json"
-    content: "{{ _vllm_model_config | to_nice_json }}\n"
+    dest: "{{ vllm_models_host_path }}/{{ vllm_model_dir }}/config.json"
+    content: |
+      {{ (_vllm_config_raw.content | b64decode | from_json)
+         | combine({'max_position_embeddings': vllm_max_model_len,
+                    'rope_scaling': vllm_rope_scaling_dict})
+         | to_nice_json }}
     mode: "0644"
-  vars:
-    _vllm_model_config_raw: "{{ lookup('file', vllm_models_host_path + '/' + vllm_served_model_name | capitalize + '/config.json') | from_json }}"
-    _vllm_model_config: "{{ _vllm_model_config_raw | combine({'max_position_embeddings': vllm_max_model_len, 'rope_scaling': vllm_rope_scaling_dict}) }}"
   become: true
   tags:
     - vllm

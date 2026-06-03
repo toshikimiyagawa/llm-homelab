@@ -44,6 +44,8 @@ def test_tasks_configure_yarn_rope_scaling_in_model_config():
     assert "YaRN RoPE" in content
     assert "config.json" in content
     assert "vllm_rope_scaling_dict" in content
+    assert "slurp" in content
+    assert "vllm_model_dir" in content
 
 
 def test_api_verification_uses_service_endpoint_not_pod_tools():
