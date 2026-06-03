@@ -49,10 +49,10 @@
   },
   {
     "id": "issue-20-open-webui",
-    "phase": "implement",
+    "phase": "verify",
     "assigned_agent": "codex",
-    "status": "completed",
+    "status": "blocked",
     "handoff": "specs/issue-20-open-webui/handoff.md",
-    "blocked_reason": null
+    "blocked_reason": "SDD reviewer failed AC5: open-webui.solvelio.com does not resolve. Created GitHub issue #51 to register the DNS record, then rerun AC5 verification."
   }
 ]
