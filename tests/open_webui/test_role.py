@@ -14,7 +14,7 @@ OPS_DOC = ROOT / "docs" / "operations.md"
 def test_defaults_define_global_model_params_max_tokens():
     content = DEFAULTS.read_text()
     assert "open_webui_default_model_params" in content
-    assert '"max_tokens": 8192' in content
+    assert "max_tokens: 8192" in content
 
 
 def test_deployment_exports_default_model_params_to_container():
