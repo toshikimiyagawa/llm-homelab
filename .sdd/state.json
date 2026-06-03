@@ -1,6 +1,6 @@
 {
   "feature": "issue-46-dcgm-exporter-version",
   "tier": 1,
-  "phase": "implement",
-  "justification": "Tier 1: fix DCGM Exporter HelmChart chart version mismatch blocking playbooks/08-prometheus.yml"
+  "phase": "done",
+  "justification": "Tier 1: DCGM Exporter chart version fix verified by static tests and playbooks/08-prometheus.yml"
 }
