@@ -41,7 +41,7 @@ def test_opencode_config_uses_singular_provider_key():
 def test_qwen_model_defines_context_and_output_limits():
     model = _opencode_config_json()["provider"]["vllm"]["models"]["qwen3-32b"]
     assert model["limit"] == {
-        "context": 131072,
+        "context": 92736,
         "output": 8192,
     }
 

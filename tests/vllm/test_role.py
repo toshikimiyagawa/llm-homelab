@@ -35,7 +35,7 @@ def test_deployment_sets_max_model_len_for_128k_context():
 
 def test_default_max_model_len_and_rope_scaling():
     content = (ROLE_ROOT / "defaults" / "main.yml").read_text()
-    assert "vllm_max_model_len: 131072" in content
+    assert "vllm_max_model_len: 92736" in content
     assert "yarn" in content
 
 

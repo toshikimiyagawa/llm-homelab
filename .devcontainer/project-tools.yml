@@ -42,7 +42,7 @@ post_install:
               "qwen3-32b": {
                 "name": "Qwen3-32B",
                 "limit": {
-                  "context": 131072,
+                  "context": 92736,
                   "output": 8192
                 }
               }
