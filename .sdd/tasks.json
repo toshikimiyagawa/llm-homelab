@@ -46,5 +46,13 @@
     "status": "completed",
     "handoff": null,
     "blocked_reason": null
+  },
+  {
+    "id": "issue-52-resolver",
+    "phase": "done",
+    "assigned_agent": "codex",
+    "status": "completed",
+    "handoff": "specs/issue-52-resolver/handoff.md",
+    "blocked_reason": null
   }
 ]

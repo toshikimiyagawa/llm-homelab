@@ -38,6 +38,29 @@
   notify: Reload systemd
   when: common_manage_networkd_wait_online
 
+
+- name: Create systemd-resolved drop-in directory
+  ansible.builtin.file:
+    path: "{{ common_resolved_dropin_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  when: common_manage_resolved_domain_dns
+
+- name: Route solvelio.com DNS lookups to public resolvers
+  ansible.builtin.copy:
+    dest: "{{ common_resolved_dropin_path }}"
+    content: |
+      [Resolve]
+      DNS={{ common_resolved_dns_servers | join(' ') }}
+      Domains=~{{ common_resolved_domain }}
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart systemd-resolved
+  when: common_manage_resolved_domain_dns
+
 - name: Ensure model and data directories exist
   ansible.builtin.file:
     path: "{{ item }}"
