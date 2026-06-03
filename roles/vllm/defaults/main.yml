@@ -9,4 +9,7 @@ vllm_domain: "vllm.{{ base_domain }}"
 vllm_gpu_memory_utilization: "0.90"
 vllm_port: 8000
 vllm_max_model_len: 131072
-vllm_rope_scaling: '{"rope_type":"yarn","factor":4.0,"original_max_position_embeddings":32768}'
+vllm_rope_scaling_dict:
+  rope_type: yarn
+  factor: 4.0
+  original_max_position_embeddings: 32768
