@@ -22,15 +22,5 @@ post_install:
     run: uv tool install ansible-core
   - name: install ansible collections
     run: PATH="/home/ubuntu/.local/bin:$PATH" ANSIBLE_HOME=/home/ubuntu/.ansible ansible-galaxy collection install -r /workspace/requirements.yml
-  - name: install aider-chat
-    run: uv tool install --python 3.12 aider-chat
-  - name: configure aider for vLLM
-    run: |
-      cat > /home/ubuntu/.aider.conf.yml <<'EOF'
-      openai-api-base: https://vllm.solvelio.com/v1
-      openai-api-key: dummy
-      model: openai/qwen3-32b
-      no-auto-commits: true
-      EOF
 #
 # For complex setup, you can also create .devcontainer/post-install.sh (must be executable).
