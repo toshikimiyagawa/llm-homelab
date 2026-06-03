@@ -17,8 +17,9 @@ Tier 1: localized bugfix to one Kubernetes manifest template plus static tests.
 - [ ] AC1: The vLLM Deployment template uses `strategy.type: Recreate`.
 - [ ] AC2: The vLLM Deployment template includes `--enable-auto-tool-choice`.
 - [ ] AC3: The vLLM Deployment template includes `--tool-call-parser hermes`.
-- [ ] AC4: Static tests cover AC1 through AC3.
-- [ ] AC5: Targeted tests and YAML lint for the changed YAML/Jinja template pass.
+- [ ] AC4: Static tests cover AC1 through AC3 and API verification behavior.
+- [ ] AC5: Targeted tests and lint for the changed files pass.
+- [ ] AC6: The vLLM API verification task does not depend on tools installed inside the vLLM container image.
 
 ## Out Of Scope
 
