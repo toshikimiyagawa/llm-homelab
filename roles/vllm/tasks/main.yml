@@ -125,12 +125,8 @@
 - name: Verify vLLM API responds to /v1/models
   ansible.builtin.shell: |
     set -o pipefail
-    k3s kubectl -n {{ vllm_namespace }} exec \
-      "$(k3s kubectl -n {{ vllm_namespace }} get pod \
-        -l app=vllm \
-        -o jsonpath='{.items[0].metadata.name}')" \
-      -- wget -q -O- http://localhost:{{ vllm_port }}/v1/models | \
-      grep -q '"object":"list"'
+    vllm_cluster_ip="$(k3s kubectl -n {{ vllm_namespace }} get service vllm -o jsonpath='{.spec.clusterIP}')"
+    curl -fsS "http://${vllm_cluster_ip}:80/v1/models" | grep -q '"object":"list"'
   args:
     executable: /bin/bash
   changed_when: false
