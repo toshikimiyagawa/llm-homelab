@@ -30,5 +30,21 @@
     "status": "completed",
     "handoff": "specs/issue-16-hdd-mount/handoff.md",
     "blocked_reason": null
+  },
+  {
+    "id": "issue-45-prometheus-data-ownership",
+    "phase": "done",
+    "assigned_agent": "codex",
+    "status": "completed",
+    "handoff": null,
+    "blocked_reason": null
+  },
+  {
+    "id": "issue-48-sdd-pr47-cleanup",
+    "phase": "done",
+    "assigned_agent": "codex",
+    "status": "completed",
+    "handoff": null,
+    "blocked_reason": null
   }
 ]

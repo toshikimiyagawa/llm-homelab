@@ -87,6 +87,14 @@ chore: bump ansible collections version
 refactor: split nvidia role into driver and toolkit
 ```
 
+
+## Branch / PR 運用
+
+- feature ごとに専用 branch と専用 worktree を使い、同じ checkout で複数 issue の変更を混在させない。
+- commit 前に `git status --short --branch` と `git diff --name-status` を確認し、対象 issue と無関係な変更が含まれていないことを確認する。
+- `git add .` は避け、issue に対応するファイルだけを明示的に stage する。
+- PR description には対象 issue の範囲だけを書く。作業中に見つかった別件は、同じ PR に混ぜず別 issue または別 PR として追跡する。
+
 ## ブランチ戦略
 
 - `main`: 常に動作する状態を維持する。
