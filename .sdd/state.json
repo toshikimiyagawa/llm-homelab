@@ -1,6 +1,5 @@
 {
-  "feature": "issue-73-opencode-token-limits",
-  "tier": 1,
-  "phase": "implement",
-  "justification": "Tier 1: localized devcontainer opencode config bugfix with static tests"
+  "tier": 0,
+  "phase": "done",
+  "note": "no active feature"
 }
