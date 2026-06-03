@@ -1,6 +1,6 @@
 {
-  "feature": "issue-52-resolver",
-  "tier": 1,
+  "feature": "issue-20-open-webui",
+  "tier": 2,
   "phase": "done",
-  "justification": "Tier 1: solvelio.com DNS routing applied and verified on llm01"
+  "justification": "Tier 2: Open WebUI implementation verified against all acceptance criteria"
 }

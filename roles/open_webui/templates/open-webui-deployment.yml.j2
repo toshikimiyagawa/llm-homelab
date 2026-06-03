@@ -1,0 +1,65 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ open_webui_app_name }}
+  namespace: {{ open_webui_namespace }}
+spec:
+  replicas: {{ open_webui_replicas }}
+  selector:
+    matchLabels:
+      app: {{ open_webui_app_name }}
+  template:
+    metadata:
+      labels:
+        app: {{ open_webui_app_name }}
+    spec:
+      enableServiceLinks: false
+      hostNetwork: {{ open_webui_host_network | bool | lower }}
+      dnsPolicy: ClusterFirstWithHostNet
+      hostAliases:
+        - ip: "{{ open_webui_ollama_host_alias_ip }}"
+          hostnames:
+            - llm01
+      nodeSelector:
+        kubernetes.io/hostname: "{{ expected_hostname }}"
+      containers:
+        - name: open-webui
+          image: "{{ open_webui_image }}"
+          env:
+            - name: ENABLE_OPENAI_API
+              value: "true"
+            - name: OPENAI_API_BASE_URLS
+              value: "{{ open_webui_vllm_base_url }}"
+            - name: OPENAI_API_KEYS
+              value: "{{ open_webui_openai_api_keys }}"
+            - name: ENABLE_OLLAMA_API
+              value: "true"
+            - name: OLLAMA_BASE_URLS
+              value: "{{ open_webui_ollama_base_url }}"
+            - name: WEBUI_NAME
+              value: LLM Homelab
+          ports:
+            - containerPort: {{ open_webui_container_port }}
+          resources:
+            requests:
+              cpu: "{{ open_webui_cpu_request }}"
+              memory: "{{ open_webui_memory_request }}"
+            limits:
+              cpu: "{{ open_webui_cpu_limit }}"
+              memory: "{{ open_webui_memory_limit }}"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ open_webui_container_port }}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 18
+          volumeMounts:
+            - name: open-webui-data
+              mountPath: /app/backend/data
+      volumes:
+        - name: open-webui-data
+          hostPath:
+            path: {{ open_webui_data_path }}
+            type: Directory

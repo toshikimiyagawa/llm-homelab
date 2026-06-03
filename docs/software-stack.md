@@ -68,6 +68,36 @@ Ansible での適用:
 ansible-playbook playbooks/09-vllm.yml --vault-password-file ~/.vault_pass
 ```
 
+### Open WebUI
+
+Open WebUI は k3s Deployment として `open-webui` namespace に導入し、vLLM と Ollama のブラウザ UI として利用する。
+
+| 項目 | 設定値 |
+|------|--------|
+| image | `ghcr.io/open-webui/open-webui:main` |
+| URL | `https://open-webui.solvelio.com` |
+| 永続化 | `/opt/open-webui-data` を `/app/backend/data` に hostPath mount |
+| vLLM 接続 | `https://vllm.solvelio.com/v1` (`OPENAI_API_BASE_URLS`) |
+| Ollama 接続 | `http://llm01:11434` (`OLLAMA_BASE_URLS`) |
+
+Open WebUI のユーザー、設定、SQLite データベースは `/opt/open-webui-data` に保持する。replica は hostPath とローカル state 前提のため 1 に固定する。
+
+Ollama は認証なし API を外部公開しないため `127.0.0.1:11434` のみに bind する。Open WebUI pod は `hostNetwork: true` と `llm01 to 127.0.0.1` の hostAlias により、Ollama の bind 設定を変更せずに接続する。
+
+アクセス URL（要 Tailscale 接続）:
+
+- UI: `https://open-webui.solvelio.com`
+
+事前に Cloudflare で以下の DNS A レコードを手動登録する（Tailscale IP）:
+
+- `open-webui.solvelio.com` to `100.107.191.51`
+
+Ansible での適用:
+
+```bash
+ansible-playbook playbooks/21-open-webui.yml --vault-password-file ~/.vault_pass
+```
+
 ### Tailscale
 
 公式 APT リポジトリ（`https://pkgs.tailscale.com/stable/ubuntu`）からインストールする。
