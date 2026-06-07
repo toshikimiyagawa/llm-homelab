@@ -1,0 +1,13 @@
+---
+- name: Restart cloudflared
+  ansible.builtin.systemd:
+    name: "{{ cloudflared_service_name }}"
+    state: restarted
+    daemon_reload: true
+
+# 設定構文は sshd ドロップイン配置タスクの validate (sshd -t) で検証済みのため、
+# 既存接続を切らない reload を使う。
+- name: Reload sshd
+  ansible.builtin.service:
+    name: "{{ cloudflared_sshd_service_name }}"
+    state: reloaded

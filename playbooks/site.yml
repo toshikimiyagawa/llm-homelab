@@ -25,3 +25,6 @@
 
 - name: Deploy Open WebUI browser interface
   ansible.builtin.import_playbook: 21-open-webui.yml
+
+- name: Configure Cloudflare Tunnel and external access
+  ansible.builtin.import_playbook: 22-cloudflare-tunnel.yml

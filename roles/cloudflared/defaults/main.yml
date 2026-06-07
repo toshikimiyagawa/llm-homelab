@@ -1,0 +1,26 @@
+---
+# cloudflared role defaults (issue #88)
+
+# apt install
+cloudflared_apt_keyring_path: /usr/share/keyrings/cloudflare-main.gpg
+cloudflared_apt_key_url: https://pkg.cloudflare.com/cloudflare-main.gpg
+# Cloudflare の cloudflared apt は配布コードネーム単位。実機は Ubuntu 26.04 だが
+# tailscale role と同様、Cloudflare 側が提供する安定コードネームを使う。
+cloudflared_apt_distro: noble
+cloudflared_apt_repo: >-
+  deb [signed-by={{ cloudflared_apt_keyring_path }}]
+  https://pkg.cloudflare.com/cloudflared {{ cloudflared_apt_distro }} main
+cloudflared_package: cloudflared
+
+# tunnel / config
+cloudflared_config_dir: /etc/cloudflared
+cloudflared_config_path: /etc/cloudflared/config.yml
+cloudflared_credentials_path: /etc/cloudflared/credentials.json
+# 非機密。実環境の tunnel ID を group_vars/all/vars.yml 等で上書きする。
+cloudflared_tunnel_id: ""
+cloudflared_service_name: cloudflared
+
+# sshd: Cloudflare Access Browser SSH 用 CA 信頼 + ハードニング
+cloudflared_sshd_dropin_path: /etc/ssh/sshd_config.d/10-cloudflare.conf
+cloudflared_ssh_ca_path: /etc/ssh/cloudflare_ca.pub
+cloudflared_sshd_service_name: ssh

@@ -1,0 +1,93 @@
+---
+- name: Add Cloudflare apt signing key
+  ansible.builtin.get_url:
+    url: "{{ cloudflared_apt_key_url }}"
+    dest: "{{ cloudflared_apt_keyring_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  tags: [cloudflared]
+
+- name: Add cloudflared apt repository
+  ansible.builtin.apt_repository:
+    repo: "{{ cloudflared_apt_repo }}"
+    filename: cloudflared
+    state: present
+    update_cache: true
+  tags: [cloudflared]
+
+- name: Install cloudflared
+  ansible.builtin.apt:
+    name: "{{ cloudflared_package }}"
+    state: present
+    update_cache: true
+  tags: [cloudflared]
+
+- name: Create cloudflared config directory
+  ansible.builtin.file:
+    path: "{{ cloudflared_config_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  tags: [cloudflared]
+
+- name: Deploy cloudflared tunnel credentials
+  ansible.builtin.copy:
+    content: "{{ vault_cloudflared_tunnel_credentials }}"
+    dest: "{{ cloudflared_credentials_path }}"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+  notify: Restart cloudflared
+  tags: [cloudflared]
+
+- name: Deploy cloudflared tunnel config
+  ansible.builtin.template:
+    src: config.yml.j2
+    dest: "{{ cloudflared_config_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart cloudflared
+  tags: [cloudflared]
+
+- name: Deploy cloudflared systemd unit
+  ansible.builtin.template:
+    src: cloudflared.service.j2
+    dest: /etc/systemd/system/cloudflared.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart cloudflared
+  tags: [cloudflared]
+
+- name: Enable and start cloudflared service
+  ansible.builtin.systemd:
+    name: "{{ cloudflared_service_name }}"
+    enabled: true
+    state: started
+    daemon_reload: true
+  tags: [cloudflared]
+
+- name: Deploy Cloudflare Access SSH CA public key
+  ansible.builtin.copy:
+    src: cloudflare_ca.pub
+    dest: "{{ cloudflared_ssh_ca_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload sshd
+  tags: [cloudflared]
+
+- name: Configure sshd to trust Cloudflare SSH CA and disable password auth
+  ansible.builtin.template:
+    src: sshd-cloudflare.conf.j2
+    dest: "{{ cloudflared_sshd_dropin_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+    validate: "/usr/sbin/sshd -t -f %s"
+  notify: Reload sshd
+  tags: [cloudflared]

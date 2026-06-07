@@ -80,6 +80,15 @@ cert-manager の DNS01 チャレンジ用に Cloudflare API Token を使用す�
 
 格納場所: `inventory/group_vars/all/vault.yml`（Ansible Vault 暗号化）のキー名 `cloudflare_api_token`
 
+## Cloudflare Tunnel credentials
+
+`cloudflared` の locally-managed tunnel（issue #88）が使う credentials JSON（`TunnelSecret` を含む）は機密。
+
+- 格納場所: `inventory/group_vars/all/vault.yml`（Ansible Vault 暗号化）のキー名 `vault_cloudflared_tunnel_credentials`
+- `roles/cloudflared` が `no_log: true` でホストへ配置し、配置先 `/etc/cloudflared/credentials.json` は mode `0600`
+- tunnel ID（`cloudflared_tunnel_id`）と SSH CA 公開鍵（`cloudflare_ca.pub`）は非機密のため通常変数 / `files/` で管理する
+- Service Token の `Client Secret` はクライアント側で保持し、リポジトリには置かない
+
 ## 禁止事項
 
 - シークレットを平文でcommitしない。

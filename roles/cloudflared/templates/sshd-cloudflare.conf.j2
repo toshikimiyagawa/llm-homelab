@@ -1,0 +1,5 @@
+{{ ansible_managed | comment }}
+# Managed by Ansible (roles/cloudflared) — issue #88
+# Cloudflare Access Browser SSH の短命証明書を信頼し、パスワード認証を無効化する。
+TrustedUserCAKeys {{ cloudflared_ssh_ca_path }}
+PasswordAuthentication no

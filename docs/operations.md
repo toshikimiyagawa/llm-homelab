@@ -318,6 +318,82 @@ Open WebUI から vLLM の Qwen を使う場合、`max_tokens=32000` のよう�
 2. 長い会話では、新しいチャットを開始するか、履歴を要約してから続ける。
 3. モデルごとに出力上限を変えたい場合は、Open WebUI のモデル設定で上書きする。
 
+## 外部アクセス（Cloudflare Tunnel + Access）
+
+会社管理 Mac（ソフト導入不可・ブラウザと標準 `ssh` のみ・外出先 outbound 443 のみ）から llm01 へアクセスするための経路（issue #88）。`cloudflared` が llm01 から外向きにトンネルを張り、ルーターのインバウンド開放を行わない。既存の Tailscale 経路（`open-webui.solvelio.com` / `vllm.solvelio.com`）はそのまま併存する。
+
+### 公開ホスト名
+
+| サービス | ホスト名 | backend | 認証 |
+|----------|----------|---------|------|
+| Open WebUI | `open-webui-llm01.solvelio.com` | `http://localhost:8080` | Access: Google ログイン |
+| SSH | `ssh-llm01.solvelio.com` | `ssh://localhost:22`（Browser SSH） | Access: Google + 短命 SSH 証明書 |
+| vLLM | `vllm-llm01.solvelio.com` | Traefik 経由 | Access: Service Token |
+| Ollama | `ollama-llm01.solvelio.com` | `http://localhost:11434` | Access: Service Token |
+
+### 一度きりの手動セットアップ（Cloudflare 側）
+
+クラウド状態のため OS 再インストールしても残る。発行値は控えておく。
+
+1. `cloudflared tunnel login`（ブラウザ認証、solvelio.com を選択）
+2. `cloudflared tunnel create llm01` → 表示される **tunnel ID** と **credentials JSON** を控える
+3. credentials JSON を `inventory/group_vars/all/vault.yml` の `vault_cloudflared_tunnel_credentials` に格納（Ansible Vault 暗号化）。tunnel ID は `cloudflared_tunnel_id`（非機密）に設定
+4. DNS ルートを 4 ホスト分作成:
+
+   ```bash
+   cloudflared tunnel route dns llm01 open-webui-llm01.solvelio.com
+   cloudflared tunnel route dns llm01 ollama-llm01.solvelio.com
+   cloudflared tunnel route dns llm01 vllm-llm01.solvelio.com
+   cloudflared tunnel route dns llm01 ssh-llm01.solvelio.com
+   ```
+
+5. Zero Trust → Settings → Authentication: **Google** を IdP に追加
+6. Zero Trust → Access → Applications:
+   - `open-webui-llm01.solvelio.com` / `ssh-llm01.solvelio.com`: Self-hosted、ポリシー=本人の Google メールのみ許可。ssh は **Browser rendering: SSH** を有効化し、発行される **SSH CA 公開鍵**を `roles/cloudflared/files/cloudflare_ca.pub` に保存
+   - `vllm-llm01.solvelio.com` / `ollama-llm01.solvelio.com`: ポリシー=**Service Auth**（Service Token）
+7. Zero Trust → Access → Service Auth: **Service Token** を発行し、`Client ID` / `Client Secret` を控える（API クライアントに渡す）
+
+> ⚠ vLLM/Ollama は native auth が無い。公開ホスト名には必ず Service Token ポリシーを付与してから DNS ルートを有効化すること（無認証で GPU を露出させない）。
+
+> ⚠ `roles/cloudflared/files/cloudflare_ca.pub` は初期状態がプレースホルダ。**実際の Cloudflare Access SSH CA 公開鍵に差し替えてから** playbook を llm01 に適用すること（さもないと Browser SSH が機能しない）。
+
+### Ansible 適用（llm01 側・再現可能）
+
+```bash
+ansible-playbook playbooks/22-cloudflare-tunnel.yml
+```
+
+`roles/cloudflared` が cloudflared install / `config.yml` / systemd 常駐 / credentials 配置 / sshd の CA 信頼 + `PasswordAuthentication no` を冪等に適用する。OS 再インストール時はクラウド状態（tunnel/DNS/Access/Service Token）が残るため、上記 playbook の再実行のみで全経路が復活する。
+
+### API クライアント例（Service Token）
+
+```bash
+curl https://vllm-llm01.solvelio.com/v1/chat/completions \
+  -H "CF-Access-Client-Id: <CLIENT_ID>.access" \
+  -H "CF-Access-Client-Secret: <CLIENT_SECRET>" \
+  -H "Authorization: Bearer dummy" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"qwen3-32b","stream":true,"messages":[{"role":"user","content":"hi"}]}'
+```
+
+Ollama も同様に `CF-Access-Client-Id` / `CF-Access-Client-Secret` を付与する。
+
+### 運用検証チェックリスト（M-1〜M-5）
+
+- [ ] M-1: 外出先 Mac のブラウザ（outbound 443 のみ）から Access(Google) 認証経由で `open-webui-llm01.solvelio.com` が開ける
+- [ ] M-2: 同 Mac のブラウザから Browser SSH（`ssh-llm01.solvelio.com`）で llm01 にログインできる（outbound 22 ブロックでも可）
+- [ ] M-3: Service Token 付きで `vllm-llm01.solvelio.com` / `ollama-llm01.solvelio.com` が応答し、トークン無しは 403
+- [ ] M-4: ルーターのインバウンド開放がゼロ
+- [ ] M-5: OS 再インストール後、`ansible-playbook playbooks/22-cloudflare-tunnel.yml` 再実行のみで M-1〜M-3 が復活
+
+### ランタイムスモークテスト（llm01 側）
+
+```bash
+ansible-playbook playbooks/23-cloudflare-smoke-test.yml
+```
+
+`cloudflared.service` の active/enabled、sshd の `PasswordAuthentication no` と `TrustedUserCAKeys` をアサートする。
+
 ## 緊急対応
 
 サーバーが応答しない場合:
