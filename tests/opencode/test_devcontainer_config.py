@@ -24,6 +24,26 @@ def _opencode_config_json():
     return json.loads(match.group("json"))
 
 
+def _opencode_install_step():
+    content = PROJECT_TOOLS.read_text()
+    match = re.search(
+        r"- name: install opencode\n\s+run: (?P<cmd>.+)\n",
+        content,
+    )
+    assert match is not None
+    return match.group("cmd")
+
+
+def test_opencode_binary_copied_from_actual_install_path():
+    # The opencode installer places the binary in ~/.opencode/bin, not
+    # ~/.local/bin. Copying from the wrong path fails with "No such file or
+    # directory" and aborts post_install (set -euo pipefail).
+    cmd = _opencode_install_step()
+    assert ".opencode/bin/opencode" in cmd
+    assert "/usr/local/bin/opencode" in cmd
+    assert "~/.local/bin/opencode" not in cmd
+
+
 def test_post_install_writes_global_opencode_config_path():
     script = _opencode_config_script()
     assert "mkdir -p /home/ubuntu/.config/opencode" in script

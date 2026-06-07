@@ -22,7 +22,7 @@ post_install:
   - name: install ansible collections
     run: PATH="/home/ubuntu/.local/bin:$PATH" ANSIBLE_HOME=/home/ubuntu/.ansible ansible-galaxy collection install -r /workspace/requirements.yml
   - name: install opencode
-    run: curl -fsSL https://opencode.ai/install | bash && sudo cp ~/.local/bin/opencode /usr/local/bin/opencode
+    run: curl -fsSL https://opencode.ai/install | bash && sudo cp "$HOME/.opencode/bin/opencode" /usr/local/bin/opencode
   - name: configure opencode for vLLM
     run: |
       mkdir -p /home/ubuntu/.config/opencode
