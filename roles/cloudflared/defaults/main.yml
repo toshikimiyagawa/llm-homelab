@@ -24,3 +24,6 @@ cloudflared_service_name: cloudflared
 cloudflared_sshd_dropin_path: /etc/ssh/sshd_config.d/10-cloudflare.conf
 cloudflared_ssh_ca_path: /etc/ssh/cloudflare_ca.pub
 cloudflared_sshd_service_name: ssh
+# issue #90: cloudflare_ca.pub がプレースホルダのまま適用される footgun を防ぐ
+# fail-fast ガードの判定マーカー。実 CA 公開鍵に差し替えれば消える文字列。
+cloudflared_ssh_ca_placeholder_marker: PLACEHOLDER

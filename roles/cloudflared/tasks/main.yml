@@ -71,6 +71,21 @@
     daemon_reload: true
   tags: [cloudflared]
 
+- name: Guard against applying the placeholder Cloudflare SSH CA public key
+  ansible.builtin.assert:
+    that:
+      - cloudflared_ssh_ca_placeholder_marker not in cloudflared_ssh_ca_local_content
+      - cloudflared_ssh_ca_local_content is match('(ssh-ed25519|ssh-rsa|ecdsa-) ')
+    fail_msg: >-
+      roles/cloudflared/files/cloudflare_ca.pub がプレースホルダのままです。
+      Cloudflare Access の実 SSH CA 公開鍵に差し替えてから適用してください
+      (docs/operations.md 参照)。プレースホルダのまま適用すると sshd が
+      ダミー CA を信頼し PasswordAuthentication no が有効化されます (issue #90)。
+    success_msg: Cloudflare SSH CA public key looks valid (not a placeholder).
+  vars:
+    cloudflared_ssh_ca_local_content: "{{ lookup('ansible.builtin.file', 'cloudflare_ca.pub') }}"
+  tags: [cloudflared]
+
 - name: Deploy Cloudflare Access SSH CA public key
   ansible.builtin.copy:
     src: cloudflare_ca.pub
