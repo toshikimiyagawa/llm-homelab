@@ -1,5 +1,6 @@
 {
-  "tier": 0,
-  "phase": "done",
-  "note": "no active feature"
+  "feature": "issue-77-git-identity-env",
+  "tier": 1,
+  "phase": "implement",
+  "note": "implementing issue #77"
 }
