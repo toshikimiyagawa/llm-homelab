@@ -1,0 +1,17 @@
+---
+- name: Configure Cloudflare Tunnel and SSH CA trust
+  hosts: llm01
+  become: true
+  pre_tasks:
+    - name: Ensure cloudflared tunnel credentials are provided
+      ansible.builtin.assert:
+        that:
+          - vault_cloudflared_tunnel_credentials is defined
+          - vault_cloudflared_tunnel_credentials | length > 0
+        fail_msg: >-
+          vault_cloudflared_tunnel_credentials が未設定です。
+          inventory/group_vars/all/vault.yml に credentials JSON を格納してください
+          (docs/operations.md 参照)。
+      no_log: true
+  roles:
+    - cloudflared

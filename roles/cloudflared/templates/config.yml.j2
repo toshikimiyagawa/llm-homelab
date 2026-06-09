@@ -1,0 +1,17 @@
+{{ ansible_managed | comment }}
+# cloudflared locally-managed tunnel config (issue #88)
+tunnel: {{ cloudflared_tunnel_id }}
+credentials-file: {{ cloudflared_credentials_path }}
+
+ingress:
+  - hostname: open-webui-llm01.solvelio.com
+    service: http://localhost:8080
+  - hostname: ollama-llm01.solvelio.com
+    service: http://localhost:11434
+  - hostname: vllm-llm01.solvelio.com
+    service: https://vllm.solvelio.com
+    originRequest:
+      originServerName: vllm.solvelio.com
+  - hostname: ssh-llm01.solvelio.com
+    service: ssh://localhost:22
+  - service: http_status:404

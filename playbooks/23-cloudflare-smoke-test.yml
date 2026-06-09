@@ -1,0 +1,33 @@
+---
+- name: Cloudflare Tunnel runtime smoke test
+  hosts: llm01
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Collect service facts
+      ansible.builtin.service_facts:
+
+    - name: Assert cloudflared.service is running and enabled
+      ansible.builtin.assert:
+        that:
+          - "'cloudflared.service' in ansible_facts.services"
+          - "ansible_facts.services['cloudflared.service'].state == 'running'"
+          - "ansible_facts.services['cloudflared.service'].status == 'enabled'"
+        fail_msg: cloudflared.service must be running and enabled
+
+    - name: Get effective sshd configuration
+      ansible.builtin.command: sshd -T
+      register: cloudflared_sshd_effective
+      changed_when: false
+
+    - name: Assert PasswordAuthentication is disabled
+      ansible.builtin.assert:
+        that:
+          - "'passwordauthentication no' in (cloudflared_sshd_effective.stdout | lower)"
+        fail_msg: sshd PasswordAuthentication must be no
+
+    - name: Assert Cloudflare SSH CA is trusted (TrustedUserCAKeys)
+      ansible.builtin.assert:
+        that:
+          - "'trustedusercakeys' in (cloudflared_sshd_effective.stdout | lower)"
+        fail_msg: sshd must trust the Cloudflare SSH CA via TrustedUserCAKeys
