@@ -1,6 +1,6 @@
 {
   "feature": "issue-93-sops-age",
   "tier": 2,
-  "phase": "spec",
+  "phase": "implement",
   "spec": "specs/issue-93-sops-age/"
 }

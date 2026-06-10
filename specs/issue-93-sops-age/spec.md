@@ -1,6 +1,6 @@
 # Spec: issue-93 — SOPS+age によるシークレット管理整理
 
-**Status**: draft
+**Status**: frozen
 **Tier**: 2
 **Issue**: #93
 
