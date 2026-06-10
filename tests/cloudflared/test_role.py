@@ -35,15 +35,13 @@ def test_apt_install_present():  # AC-1
     assert "cloudflared" in t
 
 
-def test_config_has_all_hostnames():  # AC-2
+def test_config_is_minimal_for_cloudflare_managed_tunnel():  # issue #95
     c = CONFIG_TMPL.read_text()
     for h in HOSTNAMES:
-        assert h in c
-    assert "http://localhost:8080" in c
-    assert "http://localhost:11434" in c
-    assert "ssh://localhost:22" in c
-    assert "originServerName: vllm.solvelio.com" in c
-    assert "http_status:404" in c
+        assert h not in c
+    assert "tunnel:" in c
+    assert "credentials-file:" in c
+    assert "ingress:" not in c
 
 
 def test_service_enabled():  # AC-3

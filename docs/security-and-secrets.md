@@ -97,7 +97,7 @@ SOPS 移行後は Vault 内の旧 `cloudflare_api_token` を削除し、Cloudfla
 - 格納場所: `secrets/infra.sops.yml`（SOPS 暗号化）のキー名 `cloudflared_tunnel_credentials`
 - `roles/cloudflared` が `no_log: true` でホストへ配置し、配置先 `/etc/cloudflared/credentials.json` は mode `0600`
 - tunnel ID（`cloudflared_tunnel_id`）と SSH CA 公開鍵（`cloudflare_ca.pub`）は非機密のため通常変数 / `files/` で管理する
-- Service Token の `Client Secret` はクライアント側で保持し、リポジトリには置かない
+- Service Token の `Client Secret` はクライアント側で保持し、リポジトリには置かない。
 
 旧方式では `inventory/group_vars/all/vault.yml` の `vault_cloudflared_tunnel_credentials` に格納していた。
 SOPS 移行後は Vault 内の旧 `vault_cloudflared_tunnel_credentials` を削除する。
@@ -108,6 +108,23 @@ Tunnel credentials の rotation は Cloudflare Tunnel 再作成を伴うため�
 Cloudflare Tunnel / Access 初期構築のための広権限 token は恒久保存しない。
 必要な作業中だけ環境変数で渡し、作業後に Cloudflare 側で revoke する。
 この token は SOPS、Ansible Vault、リポジトリ、docs のいずれにも保存しない。
+
+## Cloudflare Terraform state
+
+issue #95 以降、Cloudflare 側の DNS / Tunnel / Access は `infra/cloudflare/` の Terraform で管理する。
+
+Terraform provider token は `CLOUDFLARE_API_TOKEN` 環境変数で一時的に渡し、`terraform.tfvars` や `.tf` ファイルには保存しない。import/bootstrap で広い権限の token を使った場合は、作業後に revoke するか権限を縮小する。
+
+`infra/cloudflare/terraform.tfstate` は Cloudflare Tunnel secret や Access Service Token の `Client Secret` を含む可能性があるため secret として扱う。以下は commit しない。
+
+- `infra/cloudflare/terraform.tfstate`
+- `infra/cloudflare/terraform.tfstate.backup`
+- `infra/cloudflare/.terraform/`
+- `infra/cloudflare/terraform.tfvars`
+- `infra/cloudflare/*.auto.tfvars`
+- `infra/cloudflare/*.tfplan`
+
+`.terraform.lock.hcl` は provider version 固定のため commit してよい。#93 の SOPS+age 基盤が完了した後、Terraform state の長期保管方法は再検討する。
 
 ## 禁止事項
 

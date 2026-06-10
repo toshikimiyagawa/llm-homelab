@@ -3,3 +3,11 @@
 .DS_Store
 
 .worktrees/
+
+# Terraform local working files and secret state
+**/.terraform/
+**/terraform.tfstate
+**/terraform.tfstate.*
+**/terraform.tfvars
+**/*.auto.tfvars
+**/*.tfplan
