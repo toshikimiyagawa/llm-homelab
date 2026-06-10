@@ -1,6 +1,7 @@
 {
   "feature": "issue-95-cloudflare-terraform",
   "tier": 2,
-  "phase": "spec",
-  "note": "writing spec for issue #95"
+  "phase": "implement",
+  "spec": "specs/issue-95-cloudflare-terraform/",
+  "note": "frozen spec ready for implementation; stop until explicitly instructed"
 }

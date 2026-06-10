@@ -1,6 +1,6 @@
 # Spec: issue-95 - Cloudflare DNS/Tunnel/Access Terraform 管理
 
-**Status**: draft
+**Status**: frozen
 **Tier**: 2
 **Issue**: #95
 **Created**: 2026-06-11
@@ -23,7 +23,7 @@ Cloudflare 側の DNS / Tunnel / Access 操作を Terraform 管理へ移行し�
 - `open-webui-llm01`, `ssh-llm01`, `vllm-llm01`, `ollama-llm01` の DNS CNAME 管理。
 - Open WebUI / Browser SSH 用の Access Application と Google ログイン許可ポリシー管理。
 - vLLM / Ollama 用の Access Application、Service Token、Service Auth ポリシー管理。
-- Tunnel ingress config の Terraform 管理。`roles/cloudflared/templates/config.yml.j2` と同じ 4 backend / catch-all を表現する。
+- Tunnel public hostname / ingress config の Terraform 管理。Cloudflare 側の routing は Terraform を正本にする。
 - 既存リソースを `terraform import` で state に取り込む手順と、未作成環境で `terraform apply` する手順の docs 化。
 - Terraform state / tfvars / provider token / generated secret を commit しない `.gitignore` と docs。
 - Terraform 構成を静的検証する pytest。
@@ -36,7 +36,7 @@ Cloudflare 側の DNS / Tunnel / Access 操作を Terraform 管理へ移行し�
 - Cloudflare UI read-only 設定の実適用。docs には推奨運用として記載してよい。
 - Google OAuth client / IdP 元情報の新規発行。必要な ID / secret は tfvars または既存 Cloudflare 設定の import 前提とする。
 - 既存 Tailscale 経路（`open-webui.solvelio.com`, `vllm.solvelio.com` など）の変更。
-- Ansible role の cloudflared install / systemd / sshd hardening の置き換え。
+- Ansible role の cloudflared install / systemd / sshd hardening の置き換え。ただし Cloudflare ingress を Terraform 正本へ移すため、Ansible 側の cloudflared origin config は最小化する。
 
 ## 設計決定
 
@@ -50,7 +50,7 @@ Cloudflare 側の DNS / Tunnel / Access 操作を Terraform 管理へ移行し�
 | state | local state のみ、commit 禁止、secret として扱う | #93 が blocked のため remote/SOPS 前提にしない。Service Token secret や tunnel secret が state に入る可能性を明示する |
 | provider token | `CLOUDFLARE_API_TOKEN` 環境変数で渡す | API token を tfvars や repo に保存しない |
 | Cloudflare UI | apply/import 後は UI 変更禁止、必要なら read-only 推奨 | drift を防ぎ Terraform を正本にする |
-| Tunnel config | Terraform managed config を正本にする | Cloudflare 側の public hostname / ingress を UI から排除する |
+| Tunnel config | `config_src = "cloudflare"` とし、Terraform managed config を正本にする | Cloudflare 側の public hostname / ingress を UI から排除し、DNS/Access/ingress を一体管理する |
 
 ## Terraform 変数
 
@@ -125,7 +125,7 @@ Terraform state は secret として扱う。#93 完了後に SOPS+age または
 
 `roles/cloudflared` は引き続き origin host 側を管理する。#95 は Cloudflare 側を Terraform 管理へ移すだけで、Ansible role の責務を削らない。
 
-ただし Terraform が Tunnel config を管理する場合、`roles/cloudflared/templates/config.yml.j2` の ingress と Terraform の ingress は drift しない必要がある。実装 plan では、静的テストで両者の hostname/backend/catch-all が一致することを検証する。
+Cloudflare Tunnel の public hostname / ingress config は Terraform を正本にする。そのため `roles/cloudflared/templates/config.yml.j2` は 4 hostname/backend を持つ locally-managed ingress ではなく、Cloudflare-managed tunnel を起動するための最小 config に寄せる。Ansible は `cloudflared` package、systemd、tunnel credentials/token 配置、SSH CA 配置、sshd hardening を担当する。
 
 Cloudflare Tunnel credentials JSON を Ansible Vault に置く issue #88 の方針は本 spec では変更しない。#93 が完了するまでは Vault 方針を維持する。
 
@@ -136,12 +136,12 @@ Cloudflare Tunnel credentials JSON を Ansible Vault に置く issue #88 の方�
 1. **AC-1**: `infra/cloudflare/` に Terraform root が存在し、Cloudflare provider v5 系、required Terraform version、provider token の環境変数利用方針が定義されている。
 2. **AC-2**: `terraform.tfvars.example` で `domain`, `host_id`, `cloudflare_account_id`, `cloudflare_zone_id`, `allowed_email`, `access_team_name` を差し替え可能で、`solvelio.com` は example 値に留まる。
 3. **AC-3**: Terraform が `llm01` Tunnel、4 DNS CNAME、4 Access applications、Google login policy、Service Auth policy、Service Token、Tunnel ingress config を管理する定義を持つ。
-4. **AC-4**: Tunnel ingress config は issue #88 と同じ 4 hostname/backend と catch-all を持ち、別 `domain` / `host_id` に展開できる。
+4. **AC-4**: Terraform の Tunnel ingress config は issue #88 と同じ 4 hostname/backend と catch-all を持ち、別 `domain` / `host_id` に展開できる。
 5. **AC-5**: docs に既存リソースの `terraform import` 手順と未作成環境の `terraform apply` 手順がある。
 6. **AC-6**: docs に Terraform state / tfvars / provider token / Service Token secret を commit しないこと、state を secret として扱うこと、作業後に広権限 token を revoke または権限縮小することが明記されている。
 7. **AC-7**: `.gitignore` が Terraform local state, `.terraform/`, tfvars, plan files を除外し、`.terraform.lock.hcl` を除外しない。
 8. **AC-8**: Cloudflare UI は Terraform import/apply 後に変更しない運用であること、必要なら Cloudflare Zero Trust dashboard read-only を有効化することが docs に明記されている。
-9. **AC-9**: `roles/cloudflared/templates/config.yml.j2` と Terraform Tunnel ingress の hostname/backend/catch-all が静的テストで一致する。
+9. **AC-9**: `roles/cloudflared/templates/config.yml.j2` は locally-managed ingress を保持せず、Cloudflare-managed tunnel を起動する最小 config へ移行される。Terraform Tunnel ingress が 4 hostname/backend/catch-all の正本であることを静的テストで検証する。
 10. **AC-10**: `terraform fmt -check -recursive infra/cloudflare` と `terraform validate` の実行手順が tasks/docs にあり、可能な環境では pass する。
 11. **AC-11**: `uvx pytest tests/cloudflare_terraform/` が AC-1〜AC-9 を静的に検証する。
 
@@ -151,7 +151,7 @@ Terraform は Cloudflare API と local state を必要とするため、CI で�
 
 - **静的 pytest**: `tests/cloudflare_terraform/test_config.py`
   - Terraform root / provider / resources / variables / outputs / docs / `.gitignore` を検査する。
-  - 4 hostname/backend/catch-all が Ansible cloudflared config と Terraform locals/resources で一致することを検査する。
+  - Terraform の 4 hostname/backend/catch-all が issue #88 の公開経路を表現すること、Ansible cloudflared config が重複 ingress を持たないことを検査する。
 - **Terraform CLI**:
   - `terraform fmt -check -recursive infra/cloudflare`
   - `terraform -chdir=infra/cloudflare init -backend=false`
@@ -166,6 +166,7 @@ Terraform は Cloudflare API と local state を必要とするため、CI で�
 - **import ID 誤り**: 誤った Cloudflare リソースを state に取り込むと plan が危険になる。docs に `terraform state show` と `terraform plan` 確認を明記する。
 - **既存リソース置換**: import 後に provider schema と実リソース差分で replacement が出る可能性がある。初回 plan で destroy/replacement が出たら apply せず STOP する。
 - **UI drift**: import/apply 後に UI 変更すると Terraform と乖離する。UI は閲覧のみ、変更は Terraform PR 経由とする。
+- **#88 からの設計変更**: locally-managed tunnel から Cloudflare-managed tunnel config へ寄せる。これは Cloudflare 側を Terraform 正本にするための意図的な変更であり、Ansible の責務を host provisioning に戻す。
 - **#93 未完了**: SOPS+age が未整備のため state/secret の長期保管は未完成。#95 は local manual state の安全運用に限定する。
 
 ## 参考
