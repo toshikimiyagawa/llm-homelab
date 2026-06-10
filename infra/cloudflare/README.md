@@ -90,13 +90,12 @@ terraform -chdir=infra/cloudflare import cloudflare_zero_trust_access_applicatio
 terraform -chdir=infra/cloudflare import cloudflare_zero_trust_access_application.vllm <account_id>/<application_id>
 terraform -chdir=infra/cloudflare import cloudflare_zero_trust_access_application.ollama <account_id>/<application_id>
 
-terraform -chdir=infra/cloudflare import cloudflare_zero_trust_access_policy.open_webui_google <account_id>/<policy_id>
-terraform -chdir=infra/cloudflare import cloudflare_zero_trust_access_policy.ssh_google <account_id>/<policy_id>
-terraform -chdir=infra/cloudflare import cloudflare_zero_trust_access_policy.vllm_service_auth <account_id>/<policy_id>
-terraform -chdir=infra/cloudflare import cloudflare_zero_trust_access_policy.ollama_service_auth <account_id>/<policy_id>
-
 terraform -chdir=infra/cloudflare import cloudflare_zero_trust_access_service_token.api_clients <account_id>/<service_token_id>
 ```
+
+Access policies are managed inline in each `cloudflare_zero_trust_access_application`
+resource. After importing an application, run `terraform plan` and compare the
+inline `policies` diff before applying.
 
 After each import batch, inspect state:
 

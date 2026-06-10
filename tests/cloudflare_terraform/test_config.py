@@ -62,12 +62,12 @@ def test_dns_records_point_to_tunnel():
 def test_access_resources_exist():
     text = read_all_tf()
     assert "cloudflare_zero_trust_access_application" in text
-    assert "cloudflare_zero_trust_access_policy" in text
+    assert "policies = [{" in text
     assert "cloudflare_zero_trust_access_service_token" in text
     assert 'type             = "ssh"' in text
     assert "allowed_email" in text
     assert "service_token" in text
-    assert 'decision       = "non_identity"' in text
+    assert 'decision   = "non_identity"' in text
 
 
 def test_outputs_mark_service_token_secret_sensitive():
