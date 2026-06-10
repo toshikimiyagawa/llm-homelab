@@ -1,5 +1,7 @@
 {
-  "tier": 0,
-  "phase": "done",
-  "note": "no active feature"
+  "feature": "issue-97-terraform-cli",
+  "tier": 1,
+  "phase": "implement",
+  "spec": "specs/issue-97-terraform-cli/spec.md",
+  "note": "implementing issue #97"
 }

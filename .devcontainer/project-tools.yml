@@ -21,6 +21,16 @@ post_install:
     run: uv tool install ansible-core
   - name: install ansible collections
     run: PATH="/home/ubuntu/.local/bin:$PATH" ANSIBLE_HOME=/home/ubuntu/.ansible ansible-galaxy collection install -r /workspace/requirements.yml
+  - name: install terraform cli
+    run: |
+      # Cloudflare Terraform validation for infra/cloudflare.
+      TERRAFORM_VERSION=1.13.5
+      tmp="$(mktemp -d)"
+      trap 'rm -rf "$tmp"' EXIT
+      curl -fsSL -o "$tmp/terraform.zip" "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_${ARCH}.zip"
+      unzip -q "$tmp/terraform.zip" -d "$tmp"
+      sudo install -m 0755 "$tmp/terraform" /usr/local/bin/terraform
+      terraform version
   - name: install opencode
     run: curl -fsSL https://opencode.ai/install | bash && sudo cp "$HOME/.opencode/bin/opencode" /usr/local/bin/opencode
   - name: configure opencode for vLLM
