@@ -1,0 +1,6 @@
+cloudflare_account_id = "00000000000000000000000000000000"
+cloudflare_zone_id    = "00000000000000000000000000000000"
+domain                = "solvelio.com"
+host_id               = "llm01"
+allowed_email         = "user@example.com"
+access_team_name      = "example-team"
