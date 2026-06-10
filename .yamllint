@@ -19,3 +19,7 @@ rules:
 ignore: |
   .ansible/
   dotfiles/.codex/.tmp/
+  docs/*.md
+  secrets/*.md
+  secrets/*.sops.yml
+  secrets/*.sops.yaml

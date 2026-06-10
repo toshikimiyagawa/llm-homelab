@@ -337,7 +337,7 @@ Open WebUI から vLLM の Qwen を使う場合、`max_tokens=32000` のよう�
 
 1. `cloudflared tunnel login`（ブラウザ認証、solvelio.com を選択）
 2. `cloudflared tunnel create llm01` → 表示される **tunnel ID** と **credentials JSON** を控える
-3. credentials JSON を `inventory/group_vars/all/vault.yml` の `vault_cloudflared_tunnel_credentials` に格納（Ansible Vault 暗号化）。tunnel ID は `cloudflared_tunnel_id`（非機密）に設定
+3. credentials JSON を `secrets/infra.sops.yml` の `cloudflared_tunnel_credentials` に格納（SOPS 暗号化）。tunnel ID は `cloudflared_tunnel_id`（非機密）として通常変数に設定
 4. DNS ルートを 4 ホスト分作成:
 
    ```bash

@@ -3,14 +3,26 @@
   hosts: llm01
   become: true
   pre_tasks:
+    - name: Load SOPS infrastructure secrets  # noqa: run-once[task]
+      community.sops.load_vars:
+        file: secrets/infra.sops.yml
+      delegate_to: localhost
+      run_once: true
+      no_log: true
+
+    - name: Cache cloudflared tunnel credentials
+      ansible.builtin.set_fact:
+        vault_cloudflared_tunnel_credentials: "{{ cloudflared_tunnel_credentials }}"
+      no_log: true
+
     - name: Ensure cloudflared tunnel credentials are provided
       ansible.builtin.assert:
         that:
           - vault_cloudflared_tunnel_credentials is defined
           - vault_cloudflared_tunnel_credentials | length > 0
         fail_msg: >-
-          vault_cloudflared_tunnel_credentials が未設定です。
-          inventory/group_vars/all/vault.yml に credentials JSON を格納してください
+          cloudflared_tunnel_credentials が未設定です。
+          secrets/infra.sops.yml に credentials JSON を格納してください
           (docs/operations.md 参照)。
       no_log: true
   roles:

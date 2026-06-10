@@ -65,9 +65,9 @@
   },
   {
     "id": "issue-93-sops-age",
-    "phase": "tasks",
+    "phase": "verify",
     "assigned_agent": "codex",
-    "status": "pending",
+    "status": "completed",
     "handoff": "specs/issue-93-sops-age/handoff.md",
     "blocked_reason": null
   }
