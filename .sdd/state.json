@@ -1,7 +1,5 @@
 {
-  "feature": "issue-95-cloudflare-terraform",
-  "tier": 2,
-  "phase": "verify",
-  "spec": "specs/issue-95-cloudflare-terraform/",
-  "note": "implementation verified: pytest/terraform/ansible-lint pass, sdd-reviewer PASS; ready for PR"
+  "tier": 0,
+  "phase": "done",
+  "note": "no active feature"
 }
