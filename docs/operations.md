@@ -331,27 +331,46 @@ Open WebUI から vLLM の Qwen を使う場合、`max_tokens=32000` のよう�
 | vLLM | `vllm-llm01.solvelio.com` | Traefik 経由 | Access: Service Token |
 | Ollama | `ollama-llm01.solvelio.com` | `http://localhost:11434` | Access: Service Token |
 
-### 一度きりの手動セットアップ（Cloudflare 側）
+### Cloudflare 側 Terraform 適用
 
-クラウド状態のため OS 再インストールしても残る。発行値は控えておく。
+Cloudflare 側の Tunnel / DNS / Access / Service Token は `infra/cloudflare/` の Terraform を正本にする（issue #95）。Cloudflare UI で作成・変更しない。既存リソースがある場合は `terraform import` で state に取り込む。
 
-1. `cloudflared tunnel login`（ブラウザ認証、solvelio.com を選択）
-2. `cloudflared tunnel create llm01` → 表示される **tunnel ID** と **credentials JSON** を控える
-3. credentials JSON を `inventory/group_vars/all/vault.yml` の `vault_cloudflared_tunnel_credentials` に格納（Ansible Vault 暗号化）。tunnel ID は `cloudflared_tunnel_id`（非機密）に設定
-4. DNS ルートを 4 ホスト分作成:
+前提:
 
-   ```bash
-   cloudflared tunnel route dns llm01 open-webui-llm01.solvelio.com
-   cloudflared tunnel route dns llm01 ollama-llm01.solvelio.com
-   cloudflared tunnel route dns llm01 vllm-llm01.solvelio.com
-   cloudflared tunnel route dns llm01 ssh-llm01.solvelio.com
-   ```
+- Cloudflare account / zone / domain は存在している
+- Zero Trust の Google IdP は設定済み
+- `CLOUDFLARE_API_TOKEN` は環境変数で一時的に渡す
+- `infra/cloudflare/terraform.tfstate` は secret として扱い commit しない
 
-5. Zero Trust → Settings → Authentication: **Google** を IdP に追加
-6. Zero Trust → Access → Applications:
-   - `open-webui-llm01.solvelio.com` / `ssh-llm01.solvelio.com`: Self-hosted、ポリシー=本人の Google メールのみ許可。ssh は **Browser rendering: SSH** を有効化し、発行される **SSH CA 公開鍵**を `roles/cloudflared/files/cloudflare_ca.pub` に保存
-   - `vllm-llm01.solvelio.com` / `ollama-llm01.solvelio.com`: ポリシー=**Service Auth**（Service Token）
-7. Zero Trust → Access → Service Auth: **Service Token** を発行し、`Client ID` / `Client Secret` を控える（API クライアントに渡す）
+```bash
+cp infra/cloudflare/terraform.tfvars.example infra/cloudflare/terraform.tfvars
+export CLOUDFLARE_API_TOKEN="<temporary-token>"
+terraform -chdir=infra/cloudflare init
+```
+
+`infra/cloudflare/terraform.tfvars` に account ID / zone ID / domain / host ID / allowed email を設定する。既存の Tunnel / DNS / Access / Service Token がある場合は、`infra/cloudflare/README.md` の resource address 一覧に従って `terraform import` を実行する。
+
+```bash
+terraform -chdir=infra/cloudflare import cloudflare_zero_trust_tunnel_cloudflared.llm01 <account_id>/<tunnel_id>
+terraform -chdir=infra/cloudflare import 'cloudflare_dns_record.tunnel["open_webui"]' <zone_id>/<record_id>
+terraform -chdir=infra/cloudflare import cloudflare_zero_trust_access_application.open_webui <account_id>/<application_id>
+```
+
+import 後または未作成環境では plan を確認する。
+
+```bash
+terraform -chdir=infra/cloudflare plan
+```
+
+意図しない destroy / replacement が出たら `terraform apply` せず STOP する。差分が意図通りなら適用する。
+
+```bash
+terraform -chdir=infra/cloudflare apply
+```
+
+作業後、広い権限の `CLOUDFLARE_API_TOKEN` は revoke するか権限を縮小する。Terraform import/apply 後、Cloudflare UI は read-only 扱いにし、変更は Terraform PR 経由で行う。必要なら Zero Trust dashboard read-only 権限を有効化する。
+
+Ansible 用には Terraform output の tunnel ID を `cloudflared_tunnel_id`（非機密）へ反映する。credentials JSON は引き続き `inventory/group_vars/all/vault.yml` の `vault_cloudflared_tunnel_credentials` に格納する。
 
 > ⚠ vLLM/Ollama は native auth が無い。公開ホスト名には必ず Service Token ポリシーを付与してから DNS ルートを有効化すること（無認証で GPU を露出させない）。
 

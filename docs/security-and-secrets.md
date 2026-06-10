@@ -89,6 +89,23 @@ cert-manager の DNS01 チャレンジ用に Cloudflare API Token を使用す�
 - tunnel ID（`cloudflared_tunnel_id`）と SSH CA 公開鍵（`cloudflare_ca.pub`）は非機密のため通常変数 / `files/` で管理する
 - Service Token の `Client Secret` はクライアント側で保持し、リポジトリには置かない
 
+## Cloudflare Terraform state
+
+issue #95 以降、Cloudflare 側の DNS / Tunnel / Access は `infra/cloudflare/` の Terraform で管理する。
+
+Terraform provider token は `CLOUDFLARE_API_TOKEN` 環境変数で一時的に渡し、`terraform.tfvars` や `.tf` ファイルには保存しない。import/bootstrap で広い権限の token を使った場合は、作業後に revoke するか権限を縮小する。
+
+`infra/cloudflare/terraform.tfstate` は Cloudflare Tunnel secret や Access Service Token の `Client Secret` を含む可能性があるため secret として扱う。以下は commit しない。
+
+- `infra/cloudflare/terraform.tfstate`
+- `infra/cloudflare/terraform.tfstate.backup`
+- `infra/cloudflare/.terraform/`
+- `infra/cloudflare/terraform.tfvars`
+- `infra/cloudflare/*.auto.tfvars`
+- `infra/cloudflare/*.tfplan`
+
+`.terraform.lock.hcl` は provider version 固定のため commit してよい。#93 の SOPS+age 基盤が完了した後、Terraform state の長期保管方法は再検討する。
+
 ## 禁止事項
 
 - シークレットを平文でcommitしない。
