@@ -3,5 +3,17 @@
   hosts: llm_servers
   become: true
   gather_facts: true
+  pre_tasks:
+    - name: Load SOPS infrastructure secrets  # noqa: run-once[task]
+      community.sops.load_vars:
+        file: secrets/infra.sops.yml
+      delegate_to: localhost
+      run_once: true
+      no_log: true
+
+    - name: Cache Cloudflare DNS01 token
+      ansible.builtin.set_fact:
+        cloudflare_dns01_api_token: "{{ cloudflare_dns01_api_token }}"
+      no_log: true
   roles:
     - prometheus

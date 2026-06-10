@@ -16,51 +16,58 @@
 
 実装ではAPIキー利用を基本にする。
 
-## 1Password Service Account
+## SOPS + age
 
-専用Vault:
+このリポジトリの Git 管理対象 secret は、SOPS + age を基本にする。
+Git には暗号化済みの `secrets/*.sops.yml` だけを置き、復号鍵は置かない。
+Ansible は `community.sops.load_vars` で SOPS ファイルを直接復号し、復号済みの一時 vars ファイルを作らない。
+
+age 秘密鍵:
 
 ```text
-LLM Server Infrastructure
+~/.config/sops/age/keys.txt
 ```
 
-格納するシークレット:
+この `keys.txt` は全 SOPS secret を復号できる強い鍵なので、リポジトリに commit しない。
+復旧用バックアップとして、1Password の `LLM Server Infrastructure` vault に
+`llm-homelab age private key` という item で保存してよい。
+この場合の 1Password は secret 本体の正本ではなく、age 秘密鍵の復旧用保管庫として扱う。
 
-- Tailscale Auth Key
-- Anthropic API Key
-- Google AI API Key
-- k3s Token
-- GitHub Personal Access Token
+SOPS 管理対象:
 
-環境変数例:
+- `cloudflare_dns01_api_token`: cert-manager DNS01 用 Cloudflare token
+- `cloudflared_tunnel_credentials`: locally-managed Cloudflare Tunnel credentials JSON
 
-```bash
-export OP_SERVICE_ACCOUNT_TOKEN="$(security find-generic-password \
-  -s 'op-service-account-llm' -w)"
-```
+通常の Ansible 実行では、ローカルの age 秘密鍵と `secrets/infra.sops.yml` を使う。
+1Password lookup は通常経路では使わない。
 
-Service AccountトークンはMacのKeychainに保存し、リポジトリには書かない。
+## 1Password Service Account
+
+1Password Service Account は既存 secret の保管や age 秘密鍵バックアップに使えるが、
+新規の Git 管理対象 secret の正本にはしない。
+Service Account トークンを使う場合は Mac の Keychain などローカルの安全な場所に保存し、リポジトリには書かない。
 
 ## Ansibleでの取得方針
 
-playbook開始時に1回だけ取得してキャッシュする。レート制限とログ漏洩を避けるため、シークレットを含むタスクは必ず`no_log: true`を付ける。
+playbook 開始時に `community.sops.load_vars` で `secrets/infra.sops.yml` を読み込み、
+必要な値を `no_log: true` の `set_fact` でキャッシュする。
+シークレットを含むタスクは必ず `no_log: true` を付ける。
 
 ```yaml
-- name: Cache secrets at start
-  ansible.builtin.set_fact:
-    secrets:
-      tailscale: "{{ lookup('community.general.onepassword',
-                            'Tailscale Auth Key',
-                            vault='LLM Server Infrastructure') }}"
-      anthropic: "{{ lookup('community.general.onepassword',
-                            'Anthropic API Key',
-                            vault='LLM Server Infrastructure') }}"
-  no_log: true
+- name: Load SOPS infrastructure secrets
+  community.sops.load_vars:
+    file: secrets/infra.sops.yml
   delegate_to: localhost
   run_once: true
+  no_log: true
+
+- name: Cache Cloudflare DNS01 token
+  ansible.builtin.set_fact:
+    cloudflare_dns01_api_token: "{{ cloudflare_dns01_api_token }}"
+  no_log: true
 ```
 
-## Cloudflare API Token
+## Cloudflare DNS01 API Token
 
 cert-manager の DNS01 チャレンジ用に Cloudflare API Token を使用する。
 
@@ -78,16 +85,29 @@ cert-manager の DNS01 チャレンジ用に Cloudflare API Token を使用す�
 
 発行方法: Cloudflare ダッシュボード → My Profile → API Tokens → Create Token → **Edit zone DNS** テンプレート
 
-格納場所: `inventory/group_vars/all/vault.yml`（Ansible Vault 暗号化）のキー名 `cloudflare_api_token`
+格納場所: `secrets/infra.sops.yml`（SOPS 暗号化）のキー名 `cloudflare_dns01_api_token`
+
+旧方式では `inventory/group_vars/all/vault.yml` の `cloudflare_api_token` に格納していた。
+SOPS 移行後は Vault 内の旧 `cloudflare_api_token` を削除し、Cloudflare 側で token rotation を人間が実施する。
 
 ## Cloudflare Tunnel credentials
 
 `cloudflared` の locally-managed tunnel（issue #88）が使う credentials JSON（`TunnelSecret` を含む）は機密。
 
-- 格納場所: `inventory/group_vars/all/vault.yml`（Ansible Vault 暗号化）のキー名 `vault_cloudflared_tunnel_credentials`
+- 格納場所: `secrets/infra.sops.yml`（SOPS 暗号化）のキー名 `cloudflared_tunnel_credentials`
 - `roles/cloudflared` が `no_log: true` でホストへ配置し、配置先 `/etc/cloudflared/credentials.json` は mode `0600`
 - tunnel ID（`cloudflared_tunnel_id`）と SSH CA 公開鍵（`cloudflare_ca.pub`）は非機密のため通常変数 / `files/` で管理する
-- Service Token の `Client Secret` はクライアント側で保持し、リポジトリには置かない
+- Service Token の `Client Secret` はクライアント側で保持し、リポジトリには置かない。
+
+旧方式では `inventory/group_vars/all/vault.yml` の `vault_cloudflared_tunnel_credentials` に格納していた。
+SOPS 移行後は Vault 内の旧 `vault_cloudflared_tunnel_credentials` を削除する。
+Tunnel credentials の rotation は Cloudflare Tunnel 再作成を伴うため、人間が運用タスクとして実施する。
+
+## 一時 Cloudflare token
+
+Cloudflare Tunnel / Access 初期構築のための広権限 token は恒久保存しない。
+必要な作業中だけ環境変数で渡し、作業後に Cloudflare 側で revoke する。
+この token は SOPS、Ansible Vault、リポジトリ、docs のいずれにも保存しない。
 
 ## Cloudflare Terraform state
 
@@ -110,8 +130,9 @@ Terraform provider token は `CLOUDFLARE_API_TOKEN` 環境変数で一時的に�
 
 - シークレットを平文でcommitしない。
 - シークレットをログに出さない。
-- Service Accountトークンをコードに記述しない。
-- Service AccountからアクセスできないPrivate Vaultを参照しない。
+- age 秘密鍵 `keys.txt` を commit しない。
+- 復号済みの `*.plain.yml` / `*.decrypted.yml` / 一時 vars ファイルを commit しない。
+- Service Account トークンをコードに記述しない。
 - Publicリポジトリに内部情報を不用意に載せない。
 
 ## 一時的なsudo運用

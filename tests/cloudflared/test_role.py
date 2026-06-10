@@ -50,9 +50,12 @@ def test_service_enabled():  # AC-3
 
 def test_credentials_no_log_and_mode():  # AC-4
     t = TASKS.read_text()
+    p = PLAYBOOK.read_text()
     assert "no_log: true" in t
     assert "0600" in t
     assert "vault_cloudflared_tunnel_credentials" in t
+    assert "cloudflared_tunnel_credentials" in p
+    assert "community.sops.load_vars" in p
 
 
 def test_sshd_ca_trust():  # AC-5

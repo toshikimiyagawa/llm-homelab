@@ -370,7 +370,7 @@ terraform -chdir=infra/cloudflare apply
 
 作業後、広い権限の `CLOUDFLARE_API_TOKEN` は revoke するか権限を縮小する。Terraform import/apply 後、Cloudflare UI は read-only 扱いにし、変更は Terraform PR 経由で行う。必要なら Zero Trust dashboard read-only 権限を有効化する。
 
-Ansible 用には Terraform output の tunnel ID を `cloudflared_tunnel_id`（非機密）へ反映する。credentials JSON は引き続き `inventory/group_vars/all/vault.yml` の `vault_cloudflared_tunnel_credentials` に格納する。
+Ansible 用には Terraform output の tunnel ID を `cloudflared_tunnel_id`（非機密）へ反映する。Tunnel credentials JSON は `secrets/infra.sops.yml` の `cloudflared_tunnel_credentials` に格納する。
 
 > ⚠ vLLM/Ollama は native auth が無い。公開ホスト名には必ず Service Token ポリシーを付与してから DNS ルートを有効化すること（無認証で GPU を露出させない）。
 
