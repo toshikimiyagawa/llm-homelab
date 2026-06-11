@@ -86,5 +86,13 @@
     "status": "completed",
     "handoff": "specs/issue-94-sops-age/handoff.md",
     "blocked_reason": null
+  },
+  {
+    "id": "issue-107-vault-to-sops",
+    "phase": "tasks",
+    "assigned_agent": "codex",
+    "status": "pending",
+    "handoff": "specs/issue-107-vault-to-sops/handoff.md",
+    "blocked_reason": null
   }
 ]
