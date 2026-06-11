@@ -91,7 +91,7 @@
     "id": "issue-107-vault-to-sops",
     "phase": "tasks",
     "assigned_agent": "codex",
-    "status": "pending",
+    "status": "completed",
     "handoff": "specs/issue-107-vault-to-sops/handoff.md",
     "blocked_reason": null
   }

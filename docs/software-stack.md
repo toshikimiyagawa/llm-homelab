@@ -65,7 +65,7 @@ k3s Deployment として `vllm` namespace に導入する。
 Ansible での適用:
 
 ```bash
-ansible-playbook playbooks/09-vllm.yml --vault-password-file ~/.vault_pass
+ansible-playbook playbooks/09-vllm.yml
 ```
 
 ### Open WebUI
@@ -97,7 +97,7 @@ Open WebUI の全体デフォルト推論パラメータは `DEFAULT_MODEL_PARAM
 Ansible での適用:
 
 ```bash
-ansible-playbook playbooks/21-open-webui.yml --vault-password-file ~/.vault_pass
+ansible-playbook playbooks/21-open-webui.yml
 ```
 
 ### Tailscale
@@ -144,7 +144,7 @@ TLS 証明書は cert-manager が Let's Encrypt DNS01 チャレンジ（Cloudfla
 Ansible での適用:
 
 ```bash
-ansible-playbook playbooks/08-prometheus.yml --vault-password-file ~/.vault_pass
+ansible-playbook playbooks/08-prometheus.yml
 ```
 
 事前に Cloudflare で以下の DNS A レコードを手動登録する（Tailscale IP）:

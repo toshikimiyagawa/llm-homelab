@@ -26,6 +26,8 @@ sops secrets/infra.sops.yml
 ## Ansible
 
 Playbooks load encrypted variables with `community.sops.load_vars`; do not decrypt to a plaintext vars file.
+Do not add Ansible Vault files under `inventory/`; inventory loading must not require
+a vault password file.
 
 ## Temporary Cloudflare Tokens
 
