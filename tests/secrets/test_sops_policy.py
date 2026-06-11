@@ -14,6 +14,9 @@ PROM_CLUSTER_ISSUER = (
 )
 PROM_PLAYBOOK = ROOT / "playbooks" / "08-prometheus.yml"
 CLOUDFLARED_PLAYBOOK = ROOT / "playbooks" / "22-cloudflare-tunnel.yml"
+TAILSCALE_PLAYBOOK = ROOT / "playbooks" / "07-tailscale.yml"
+TAILSCALE_ROLE_TASKS = ROOT / "roles" / "tailscale" / "tasks" / "main.yml"
+SOFTWARE_STACK_DOC = ROOT / "docs" / "software-stack.md"
 
 
 def test_sops_yaml_targets_secret_files():
@@ -43,6 +46,8 @@ def test_security_docs_describe_sops_age_policy():
         "age",
         "community.sops",
         "llm-homelab age private key",
+        "tailscale_auth_key",
+        "grafana_admin_password",
         "cloudflare_dns01_api_token",
         "cloudflared_tunnel_credentials",
     ]:
@@ -54,6 +59,7 @@ def test_docs_describe_vault_migration_and_rotation():
     content = SECURITY_DOC.read_text() + "\n" + OPERATIONS_DOC.read_text()
     assert "cloudflare_api_token" in content
     assert "vault_cloudflared_tunnel_credentials" in content
+    assert "tailscale_auth_key" in content
     assert "rotate" in content.lower() or "rotation" in content.lower()
 
 
@@ -85,6 +91,34 @@ def test_cloudflared_playbook_loads_sops_credentials():
     assert "cloudflared_tunnel_credentials" in content
     assert "vault_cloudflared_tunnel_credentials" in content
     assert "no_log: true" in content
+
+
+def test_tailscale_playbook_loads_sops_secrets():
+    content = TAILSCALE_PLAYBOOK.read_text()
+    assert "community.sops.load_vars" in content
+    assert "secrets/infra.sops.yml" in content
+    assert "tailscale_auth_key" in content
+    assert "no_log: true" in content
+
+
+def test_tailscale_role_uses_auth_key_directly():
+    content = TAILSCALE_ROLE_TASKS.read_text()
+    assert "tailscale_auth_key" in content
+    assert "community.general.onepassword" not in content
+    assert "vault_" not in content
+
+
+def test_docs_describe_tailscale_sops_source_of_truth():
+    stack = SOFTWARE_STACK_DOC.read_text()
+    assert "SOPS 管理の `secrets/infra.sops.yml`" in stack
+    assert '1Password "LLM Server Infrastructure" > "Tailscale Auth Key"' not in stack
+
+
+def test_secrets_readme_documents_sops_editing():
+    content = SECRETS_README.read_text()
+    assert "secrets/infra.sops.yml" in content
+    assert "sops secrets/infra.sops.yml" in content
+    assert "1Password is only a recovery location" in content
 
 
 def test_no_forbidden_secret_files_are_committed():

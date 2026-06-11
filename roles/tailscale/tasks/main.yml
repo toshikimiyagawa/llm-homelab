@@ -1,8 +1,16 @@
 ---
+- name: Download Tailscale APT signing key
+  ansible.builtin.get_url:
+    url: "{{ tailscale_apt_key_url }}"
+    dest: /tmp/tailscale-archive-keyring.asc
+    mode: "0644"
+  become: true
+  tags:
+    - tailscale
+
 - name: Add Tailscale APT signing key
-  ansible.builtin.shell: >
-    curl -fsSL {{ tailscale_apt_key_url }} | gpg --dearmor -o {{ tailscale_apt_keyring_path }}
-  args:
+  ansible.builtin.command:
+    cmd: gpg --dearmor --yes --output {{ tailscale_apt_keyring_path }} /tmp/tailscale-archive-keyring.asc
     creates: "{{ tailscale_apt_keyring_path }}"
   become: true
   tags:
