@@ -34,8 +34,9 @@ jobs:
 
       - name: Tests
         run: |
-          pip install yamllint
+          pip install yamllint uv
           yamllint -s .
+          uvx pytest -q
 
   ansible-lint:
     runs-on: ubuntu-latest
