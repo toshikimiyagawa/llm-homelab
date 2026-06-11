@@ -105,9 +105,9 @@
   },
   {
     "id": "issue-114-sops-load-vars-path",
-    "phase": "verify",
+    "phase": "done",
     "assigned_agent": "codex",
-    "status": "in_progress",
+    "status": "completed",
     "handoff": null,
     "blocked_reason": null
   }
