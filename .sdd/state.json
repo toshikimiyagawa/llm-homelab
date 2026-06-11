@@ -1,6 +1,5 @@
 {
-  "feature": "issue-71-ci-pytest",
-  "tier": 2,
-  "phase": "implement",
-  "note": "spec, plan, tasks, and handoff are frozen; awaiting explicit implementation instruction"
+  "tier": 0,
+  "phase": "done",
+  "note": "no active feature"
 }
