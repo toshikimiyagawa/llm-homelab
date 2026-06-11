@@ -7,7 +7,8 @@
     "source=devcontainer-gh-${devcontainerId},target=/home/ubuntu/.gh-config,type=volume"
   ],
   "remoteEnv": {
-    "GH_CONFIG_DIR": "/home/ubuntu/.gh-config"
+    "GH_CONFIG_DIR": "/home/ubuntu/.gh-config",
+    "CLAUDE_CONFIG_DIR": "/home/ubuntu/.claude"
   },
   "containerUser": "ubuntu",
   "remoteUser": "ubuntu",
