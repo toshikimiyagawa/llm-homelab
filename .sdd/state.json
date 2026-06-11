@@ -1,6 +1,5 @@
 {
-  "feature": "issue-107-vault-to-sops",
-  "tier": 2,
-  "phase": "implement",
-  "spec": "specs/issue-107-vault-to-sops/"
+  "tier": 0,
+  "phase": "done",
+  "note": "no active feature"
 }
