@@ -35,11 +35,19 @@ age 秘密鍵:
 
 SOPS 管理対象:
 
+- `tailscale_auth_key`: Tailscale reusable auth key
+- `grafana_admin_password`: Grafana admin password
 - `cloudflare_dns01_api_token`: cert-manager DNS01 用 Cloudflare token
 - `cloudflared_tunnel_credentials`: locally-managed Cloudflare Tunnel credentials JSON
 
 通常の Ansible 実行では、ローカルの age 秘密鍵と `secrets/infra.sops.yml` を使う。
 1Password lookup は通常経路では使わない。
+
+## Tailscale Auth Key
+
+`playbooks/07-tailscale.yml` は `secrets/infra.sops.yml` から `tailscale_auth_key` を読み込む。
+旧方式では `1Password "LLM Server Infrastructure" > "Tailscale Auth Key"` に置いていたが、SOPS 移行後は in-repo の暗号化 secret を正本とする。
+Tailscale 側で auth key を更新した場合は、人間が Tailscale 管理画面で rotation する。
 
 ## 1Password Service Account
 

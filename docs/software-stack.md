@@ -107,7 +107,7 @@ ansible-playbook playbooks/21-open-webui.yml --vault-password-file ~/.vault_pass
 
 | 項目 | 設定値 |
 |------|--------|
-| auth key 種別 | Reusable（1Password "LLM Server Infrastructure" > "Tailscale Auth Key"）|
+| auth key 種別 | Reusable（SOPS 管理の `secrets/infra.sops.yml` に保存）|
 | Tailscale SSH | 無効（通常 sshd を使用）|
 | サブネットルーティング | 未設定（必要時に `tailscale_up_flags` で追加）|
 | ACL ポリシー | Tailscale admin console で管理（Ansible 外）|

@@ -2,5 +2,16 @@
 - name: Configure Tailscale
   hosts: llm01
   become: true
+  pre_tasks:
+    - name: Load SOPS infrastructure secrets
+      community.sops.load_vars:
+        file: secrets/infra.sops.yml
+      delegate_to: localhost
+      no_log: true
+
+    - name: Cache Tailscale auth key
+      ansible.builtin.set_fact:
+        tailscale_auth_key: "{{ tailscale_auth_key }}"
+      no_log: true
   roles:
     - tailscale
