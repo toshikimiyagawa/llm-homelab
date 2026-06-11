@@ -94,5 +94,13 @@
     "status": "completed",
     "handoff": "specs/issue-107-vault-to-sops/handoff.md",
     "blocked_reason": null
+  },
+  {
+    "id": "issue-71-ci-pytest",
+    "phase": "tasks",
+    "assigned_agent": "codex",
+    "status": "pending",
+    "handoff": "specs/issue-71-ci-pytest/handoff.md",
+    "blocked_reason": null
   }
 ]
