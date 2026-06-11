@@ -18,6 +18,7 @@ CLOUDFLARED_PLAYBOOK = ROOT / "playbooks" / "22-cloudflare-tunnel.yml"
 TAILSCALE_PLAYBOOK = ROOT / "playbooks" / "07-tailscale.yml"
 TAILSCALE_ROLE_TASKS = ROOT / "roles" / "tailscale" / "tasks" / "main.yml"
 SOFTWARE_STACK_DOC = ROOT / "docs" / "software-stack.md"
+REPO_ROOT_SOPS_PATH = "{{ playbook_dir }}/../secrets/infra.sops.yml"
 
 
 def test_sops_yaml_targets_secret_files():
@@ -81,7 +82,7 @@ def test_prometheus_uses_dns01_token_name():
 def test_prometheus_playbook_loads_sops_secrets():
     content = PROM_PLAYBOOK.read_text()
     assert "community.sops.load_vars" in content
-    assert "secrets/infra.sops.yml" in content
+    assert REPO_ROOT_SOPS_PATH in content
     assert "cloudflare_dns01_api_token" in content
     assert "no_log: true" in content
 
@@ -89,7 +90,7 @@ def test_prometheus_playbook_loads_sops_secrets():
 def test_cloudflared_playbook_loads_sops_credentials():
     content = CLOUDFLARED_PLAYBOOK.read_text()
     assert "community.sops.load_vars" in content
-    assert "secrets/infra.sops.yml" in content
+    assert REPO_ROOT_SOPS_PATH in content
     assert "cloudflared_tunnel_credentials" in content
     assert "vault_cloudflared_tunnel_credentials" in content
     assert "no_log: true" in content
@@ -98,7 +99,7 @@ def test_cloudflared_playbook_loads_sops_credentials():
 def test_tailscale_playbook_loads_sops_secrets():
     content = TAILSCALE_PLAYBOOK.read_text()
     assert "community.sops.load_vars" in content
-    assert "secrets/infra.sops.yml" in content
+    assert REPO_ROOT_SOPS_PATH in content
     assert "tailscale_auth_key" in content
     assert "no_log: true" in content
 

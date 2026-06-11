@@ -5,7 +5,7 @@
   pre_tasks:
     - name: Load SOPS infrastructure secrets  # noqa: run-once[task]
       community.sops.load_vars:
-        file: secrets/infra.sops.yml
+        file: "{{ playbook_dir }}/../secrets/infra.sops.yml"
       delegate_to: localhost
       run_once: true
       no_log: true

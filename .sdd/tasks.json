@@ -102,5 +102,13 @@
     "status": "completed",
     "handoff": "specs/issue-71-ci-pytest/handoff.md",
     "blocked_reason": null
+  },
+  {
+    "id": "issue-114-sops-load-vars-path",
+    "phase": "done",
+    "assigned_agent": "codex",
+    "status": "completed",
+    "handoff": null,
+    "blocked_reason": null
   }
 ]
