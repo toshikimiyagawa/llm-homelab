@@ -99,7 +99,7 @@
     "id": "issue-71-ci-pytest",
     "phase": "tasks",
     "assigned_agent": "codex",
-    "status": "pending",
+    "status": "completed",
     "handoff": "specs/issue-71-ci-pytest/handoff.md",
     "blocked_reason": null
   }
