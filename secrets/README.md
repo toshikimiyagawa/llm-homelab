@@ -9,6 +9,7 @@ This directory stores SOPS-encrypted project secrets.
 - The age private key lives at `~/.config/sops/age/keys.txt`.
 - 1Password may store a backup item named `llm-homelab age private key` in the `LLM Server Infrastructure` vault.
 - 1Password is only a recovery location for the age private key; normal Ansible runs use the local age key directly.
+- SOPS / age CLI binaries are installed by `.devcontainer/project-tools.yml`; the age private key remains user-managed at `~/.config/sops/age/keys.txt` and must not be committed to the repository. age private key は repository に commit しない。
 
 ## In-repo Secrets
 
