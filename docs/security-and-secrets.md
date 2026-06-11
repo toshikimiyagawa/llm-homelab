@@ -42,6 +42,8 @@ SOPS 管理対象:
 
 通常の Ansible 実行では、ローカルの age 秘密鍵と `secrets/infra.sops.yml` を使う。
 1Password lookup は通常経路では使わない。
+Ansible Vault is no longer used for normal in-repo operational secrets. Do not add
+`inventory/group_vars/all/vault.yml`; inventory must load without a vault password file.
 
 ## Tailscale Auth Key
 

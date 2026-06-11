@@ -6,6 +6,7 @@ SOPS_CONFIG = ROOT / ".sops.yaml"
 SECRETS_DIR = ROOT / "secrets"
 SECRETS_README = SECRETS_DIR / "README.md"
 INFRA_SECRETS = SECRETS_DIR / "infra.sops.yml"
+INVENTORY_DIR = ROOT / "inventory"
 REQUIREMENTS = ROOT / "requirements.yml"
 SECURITY_DOC = ROOT / "docs" / "security-and-secrets.md"
 OPERATIONS_DOC = ROOT / "docs" / "operations.md"
@@ -55,11 +56,12 @@ def test_security_docs_describe_sops_age_policy():
     assert "revoke" in content.lower()
 
 
-def test_docs_describe_vault_migration_and_rotation():
+def test_docs_describe_sops_migration_and_rotation():
     content = SECURITY_DOC.read_text() + "\n" + OPERATIONS_DOC.read_text()
-    assert "cloudflare_api_token" in content
-    assert "vault_cloudflared_tunnel_credentials" in content
+    assert "cloudflare_dns01_api_token" in content
+    assert "cloudflared_tunnel_credentials" in content
     assert "tailscale_auth_key" in content
+    assert "SOPS" in content
     assert "rotate" in content.lower() or "rotation" in content.lower()
 
 
@@ -119,6 +121,27 @@ def test_secrets_readme_documents_sops_editing():
     assert "secrets/infra.sops.yml" in content
     assert "sops secrets/infra.sops.yml" in content
     assert "1Password is only a recovery location" in content
+
+
+def test_inventory_has_no_ansible_vault_encrypted_files():
+    for path in INVENTORY_DIR.rglob("*"):
+        if path.is_file():
+            assert not path.read_text(errors="ignore").startswith("$ANSIBLE_VAULT"), (
+                f"{path.relative_to(ROOT)} must not be an Ansible Vault file; "
+                "use secrets/infra.sops.yml for in-repo operational secrets"
+            )
+
+
+def test_current_docs_do_not_require_ansible_vault_password_file():
+    docs = [
+        SECURITY_DOC,
+        SOFTWARE_STACK_DOC,
+        SECRETS_README,
+    ]
+    for path in docs:
+        content = path.read_text()
+        assert "--vault-password-file" not in content
+        assert "~/.vault_pass" not in content
 
 
 def test_no_forbidden_secret_files_are_committed():

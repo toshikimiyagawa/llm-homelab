@@ -1,6 +1,5 @@
 {
-  "feature": "issue-94-sops-age-inrepo",
-  "tier": 2,
-  "phase": "verify",
-  "spec": "specs/issue-94-sops-age/"
+  "tier": 0,
+  "phase": "done",
+  "note": "no active feature"
 }
