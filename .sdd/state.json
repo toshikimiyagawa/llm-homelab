@@ -1,5 +1,6 @@
 {
-  "tier": 0,
-  "phase": "done",
-  "note": "no active feature"
+  "feature": "issue-114-sops-load-vars-path",
+  "tier": 1,
+  "phase": "verify",
+  "note": "Tier 1 bugfix implemented; verification in progress"
 }
