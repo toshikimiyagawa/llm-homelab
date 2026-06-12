@@ -75,7 +75,7 @@
   ansible.builtin.assert:
     that:
       - cloudflared_ssh_ca_placeholder_marker not in cloudflared_ssh_ca_local_content
-      - cloudflared_ssh_ca_local_content is match('(ssh-ed25519|ssh-rsa|ecdsa-) ')
+      - cloudflared_ssh_ca_local_content is match('(ssh-ed25519|ssh-rsa|ecdsa-sha2-nistp256) ')
     fail_msg: >-
       roles/cloudflared/files/cloudflare_ca.pub がプレースホルダのままです。
       Cloudflare Access の実 SSH CA 公開鍵に差し替えてから適用してください
