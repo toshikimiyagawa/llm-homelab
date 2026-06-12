@@ -51,16 +51,18 @@ def test_security_docs_describe_sops_age_policy():
         "tailscale_auth_key",
         "grafana_admin_password",
         "cloudflare_dns01_api_token",
-        "cloudflared_tunnel_credentials",
+        "cloudflared_tunnel_token",
     ]:
         assert needle in content
+    assert "cloudflared_tunnel_credentials" not in content
     assert "revoke" in content.lower()
 
 
 def test_docs_describe_sops_migration_and_rotation():
     content = SECURITY_DOC.read_text() + "\n" + OPERATIONS_DOC.read_text()
     assert "cloudflare_dns01_api_token" in content
-    assert "cloudflared_tunnel_credentials" in content
+    assert "cloudflared_tunnel_token" in content
+    assert "cloudflared_tunnel_credentials" not in content
     assert "tailscale_auth_key" in content
     assert "SOPS" in content
     assert "rotate" in content.lower() or "rotation" in content.lower()
@@ -70,7 +72,8 @@ def test_infra_sops_file_is_encrypted_and_has_required_keys():
     content = INFRA_SECRETS.read_text()
     assert "sops:" in content
     assert "cloudflare_dns01_api_token" in content
-    assert "cloudflared_tunnel_credentials" in content
+    assert "cloudflared_tunnel_token" in content
+    assert "cloudflared_tunnel_credentials" not in content
 
 
 def test_prometheus_uses_dns01_token_name():
@@ -87,12 +90,14 @@ def test_prometheus_playbook_loads_sops_secrets():
     assert "no_log: true" in content
 
 
-def test_cloudflared_playbook_loads_sops_credentials():
+def test_cloudflared_playbook_loads_sops_token():
     content = CLOUDFLARED_PLAYBOOK.read_text()
     assert "community.sops.load_vars" in content
     assert REPO_ROOT_SOPS_PATH in content
-    assert "cloudflared_tunnel_credentials" in content
-    assert "vault_cloudflared_tunnel_credentials" in content
+    assert "cloudflared_tunnel_token" in content
+    assert "vault_cloudflared_tunnel_token" in content
+    assert "cloudflared_tunnel_credentials" not in content
+    assert "vault_cloudflared_tunnel_credentials" not in content
     assert "no_log: true" in content
 
 

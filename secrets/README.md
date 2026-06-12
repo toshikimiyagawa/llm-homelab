@@ -16,7 +16,8 @@ This directory stores SOPS-encrypted project secrets.
 - `secrets/infra.sops.yml` is the SOPS-encrypted bundle for project secrets consumed by Ansible playbooks.
 - Edit it with `sops secrets/infra.sops.yml`.
 - Do not commit plaintext secret files or decrypted temporary outputs.
-- The Tailscale auth key and Grafana admin password both live here.
+- The Tailscale auth key, Grafana admin password, Cloudflare DNS01 API token,
+  and `cloudflared_tunnel_token` all live here.
 
 ## Editing
 

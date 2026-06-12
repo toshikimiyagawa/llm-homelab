@@ -10,19 +10,19 @@
       run_once: true
       no_log: true
 
-    - name: Cache cloudflared tunnel credentials
+    - name: Cache cloudflared tunnel token
       ansible.builtin.set_fact:
-        vault_cloudflared_tunnel_credentials: "{{ cloudflared_tunnel_credentials }}"
+        vault_cloudflared_tunnel_token: "{{ cloudflared_tunnel_token }}"
       no_log: true
 
-    - name: Ensure cloudflared tunnel credentials are provided
+    - name: Ensure cloudflared tunnel token is provided
       ansible.builtin.assert:
         that:
-          - vault_cloudflared_tunnel_credentials is defined
-          - vault_cloudflared_tunnel_credentials | length > 0
+          - vault_cloudflared_tunnel_token is defined
+          - vault_cloudflared_tunnel_token | length > 0
         fail_msg: >-
-          cloudflared_tunnel_credentials が未設定です。
-          secrets/infra.sops.yml に credentials JSON を格納してください
+          cloudflared_tunnel_token が未設定です。
+          secrets/infra.sops.yml に Terraform output の tunnel token を格納してください
           (docs/operations.md 参照)。
       no_log: true
   roles:

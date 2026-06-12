@@ -6,7 +6,7 @@ Wants=network-online.target
 
 [Service]
 Type=notify
-ExecStart=/usr/bin/cloudflared --no-autoupdate --config {{ cloudflared_config_path }} tunnel run
+ExecStart=/usr/bin/cloudflared --no-autoupdate --config {{ cloudflared_config_path }} tunnel run --token-file {{ cloudflared_token_path }}
 Restart=on-failure
 RestartSec=5
 User=root

@@ -1,5 +1,6 @@
 {
-  "tier": 0,
-  "phase": "done",
-  "note": "no active feature"
+  "feature": "issue-120-cloudflared-token",
+  "tier": 2,
+  "phase": "verify",
+  "spec": "specs/issue-120-cloudflared-token/"
 }

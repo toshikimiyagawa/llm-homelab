@@ -38,7 +38,7 @@ SOPS 管理対象:
 - `tailscale_auth_key`: Tailscale reusable auth key
 - `grafana_admin_password`: Grafana admin password
 - `cloudflare_dns01_api_token`: cert-manager DNS01 用 Cloudflare token
-- `cloudflared_tunnel_credentials`: locally-managed Cloudflare Tunnel credentials JSON
+- `cloudflared_tunnel_token`: Terraform-managed Cloudflare Tunnel token
 
 通常の Ansible 実行では、ローカルの age 秘密鍵と `secrets/infra.sops.yml` を使う。
 1Password lookup は通常経路では使わない。
@@ -100,18 +100,20 @@ cert-manager の DNS01 チャレンジ用に Cloudflare API Token を使用す�
 旧方式では `inventory/group_vars/all/vault.yml` の `cloudflare_api_token` に格納していた。
 SOPS 移行後は Vault 内の旧 `cloudflare_api_token` を削除し、Cloudflare 側で token rotation を人間が実施する。
 
-## Cloudflare Tunnel credentials
+## Cloudflare Tunnel token
 
-`cloudflared` の locally-managed tunnel（issue #88）が使う credentials JSON（`TunnelSecret` を含む）は機密。
+`cloudflared` は Terraform-managed tunnel（issue #120）の token で Cloudflare に接続する。この token は tunnel 接続に使える機密値として扱う。
 
-- 格納場所: `secrets/infra.sops.yml`（SOPS 暗号化）のキー名 `cloudflared_tunnel_credentials`
-- `roles/cloudflared` が `no_log: true` でホストへ配置し、配置先 `/etc/cloudflared/credentials.json` は mode `0600`
+- 格納場所: `secrets/infra.sops.yml`（SOPS 暗号化）のキー名 `cloudflared_tunnel_token`
+- 取得方法: `terraform -chdir=infra/cloudflare output -raw tunnel_token`
+- `roles/cloudflared` が `no_log: true` でホストへ配置し、配置先 `/etc/cloudflared/tunnel-token` は root-owned mode `0600`
+- systemd unit は `--token-file` で token file を参照し、token の値を `ExecStart` へ直接埋め込まない
 - tunnel ID（`cloudflared_tunnel_id`）と SSH CA 公開鍵（`cloudflare_ca.pub`）は非機密のため通常変数 / `files/` で管理する
 - Service Token の `Client Secret` はクライアント側で保持し、リポジトリには置かない。
 
-旧方式では `inventory/group_vars/all/vault.yml` の `vault_cloudflared_tunnel_credentials` に格納していた。
-SOPS 移行後は Vault 内の旧 `vault_cloudflared_tunnel_credentials` を削除する。
-Tunnel credentials の rotation は Cloudflare Tunnel 再作成を伴うため、人間が運用タスクとして実施する。
+旧方式では locally-managed tunnel の secret を Ansible Vault に格納していた。
+SOPS 移行後は Vault 内の旧 tunnel secret を削除する。
+Tunnel token の rotation は Cloudflare 側で token を再発行し、Terraform output と `secrets/infra.sops.yml` を更新してから `playbooks/22-cloudflare-tunnel.yml` を再実行する。
 
 ## 一時 Cloudflare token
 
@@ -125,7 +127,7 @@ issue #95 以降、Cloudflare 側の DNS / Tunnel / Access は `infra/cloudflare
 
 Terraform provider token は `CLOUDFLARE_API_TOKEN` 環境変数で一時的に渡し、`terraform.tfvars` や `.tf` ファイルには保存しない。import/bootstrap で広い権限の token を使った場合は、作業後に revoke するか権限を縮小する。
 
-`infra/cloudflare/terraform.tfstate` は Cloudflare Tunnel secret や Access Service Token の `Client Secret` を含む可能性があるため secret として扱う。以下は commit しない。
+`infra/cloudflare/terraform.tfstate` は Cloudflare Tunnel token や Access Service Token の `Client Secret` を含む可能性があるため secret として扱う。以下は commit しない。
 
 - `infra/cloudflare/terraform.tfstate`
 - `infra/cloudflare/terraform.tfstate.backup`

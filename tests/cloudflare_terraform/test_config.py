@@ -77,6 +77,16 @@ def test_outputs_mark_service_token_secret_sensitive():
     assert "sensitive   = true" in text
 
 
+def test_tunnel_token_data_source_and_sensitive_output():
+    tunnel = (TF / "tunnel.tf").read_text()
+    outputs = (TF / "outputs.tf").read_text()
+    assert 'data "cloudflare_zero_trust_tunnel_cloudflared_token" "llm01"' in tunnel
+    assert "tunnel_id  = cloudflare_zero_trust_tunnel_cloudflared.llm01.id" in tunnel
+    assert 'output "tunnel_token"' in outputs
+    assert "data.cloudflare_zero_trust_tunnel_cloudflared_token.llm01.token" in outputs
+    assert "sensitive   = true" in outputs
+
+
 def test_gitignore_excludes_terraform_secrets_not_lockfile():
     text = GITIGNORE.read_text()
     for pattern in [
@@ -93,7 +103,7 @@ def test_gitignore_excludes_terraform_secrets_not_lockfile():
 
 def test_ansible_config_no_longer_contains_locally_managed_ingress():
     text = CLOUDFLARED_CONFIG.read_text()
-    assert "credentials-file:" in text
+    assert "credentials-file:" not in text
     assert "ingress:" not in text
     for hostname in [
         "open-webui-llm01.solvelio.com",
@@ -115,3 +125,11 @@ def test_docs_cover_import_apply_state_and_ui_policy():
         "revoke",
     ]:
         assert term in docs
+
+
+def test_docs_describe_tunnel_token_not_credentials_json():
+    docs = OPS_DOC.read_text() + SECURITY_DOC.read_text()
+    assert "terraform output -raw tunnel_token" in docs
+    assert "cloudflared_tunnel_token" in docs
+    assert "cloudflared_tunnel_credentials" not in docs
+    assert "credentials JSON" not in docs

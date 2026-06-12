@@ -15,7 +15,7 @@ cloudflared_package: cloudflared
 # tunnel / config
 cloudflared_config_dir: /etc/cloudflared
 cloudflared_config_path: /etc/cloudflared/config.yml
-cloudflared_credentials_path: /etc/cloudflared/credentials.json
+cloudflared_token_path: /etc/cloudflared/tunnel-token
 # 非機密。実環境の tunnel ID を group_vars/all/vars.yml 等で上書きする。
 cloudflared_tunnel_id: ""
 cloudflared_service_name: cloudflared
