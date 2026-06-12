@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 ROOT = Path(__file__).parents[2]
 TF = ROOT / "infra" / "cloudflare"
@@ -70,6 +71,17 @@ def test_access_resources_exist():
     assert 'decision   = "non_identity"' in text
 
 
+def test_ssh_access_app_has_short_lived_certificate_ca():
+    text = read_all_tf()
+    outputs = (TF / "outputs.tf").read_text()
+    assert "cloudflare_zero_trust_access_short_lived_certificate" in text
+    assert "app_id     = cloudflare_zero_trust_access_application.ssh.id" in text
+    output_block = re.search(r'output "ssh_ca_public_key" \{.*?\n\}', outputs, re.DOTALL)
+    assert output_block
+    assert "cloudflare_zero_trust_access_short_lived_certificate.ssh.public_key" in outputs
+    assert "sensitive   = true" not in output_block.group(0)
+
+
 def test_outputs_mark_service_token_secret_sensitive():
     text = (TF / "outputs.tf").read_text()
     assert "service_token_client_id" in text
@@ -133,3 +145,9 @@ def test_docs_describe_tunnel_token_not_credentials_json():
     assert "cloudflared_tunnel_token" in docs
     assert "cloudflared_tunnel_credentials" not in docs
     assert "credentials JSON" not in docs
+
+
+def test_docs_describe_ssh_ca_public_key_output():
+    docs = OPS_DOC.read_text()
+    assert "terraform -chdir=infra/cloudflare output -raw ssh_ca_public_key" in docs
+    assert "roles/cloudflared/files/cloudflare_ca.pub" in docs
