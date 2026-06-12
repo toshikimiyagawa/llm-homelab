@@ -110,5 +110,13 @@
     "status": "completed",
     "handoff": null,
     "blocked_reason": null
+  },
+  {
+    "id": "issue-120-cloudflared-token",
+    "phase": "tasks",
+    "assigned_agent": "codex",
+    "status": "pending",
+    "handoff": "specs/issue-120-cloudflared-token/handoff.md",
+    "blocked_reason": null
   }
 ]
