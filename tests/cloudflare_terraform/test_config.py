@@ -51,6 +51,14 @@ def test_tunnel_is_cloudflare_managed_and_has_ingress_contract():
     assert "origin_server_name" in text
 
 
+def test_tunnel_overrides_origin_host_headers_for_strict_origins():
+    text = (TF / "tunnel.tf").read_text()
+    assert "hostname = local.hostnames.ollama" in text
+    assert "http_host_header = \"localhost\"" in text
+    assert "hostname = local.hostnames.vllm" in text
+    assert "http_host_header   = local.vllm_origin_hostname" in text
+
+
 def test_dns_records_point_to_tunnel():
     text = read_all_tf()
     assert "cloudflare_dns_record" in text

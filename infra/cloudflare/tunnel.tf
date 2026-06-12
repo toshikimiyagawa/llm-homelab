@@ -22,11 +22,15 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "llm01" {
       {
         hostname = local.hostnames.ollama
         service  = local.tunnel_services.ollama
+        origin_request = {
+          http_host_header = "localhost"
+        }
       },
       {
         hostname = local.hostnames.vllm
         service  = local.tunnel_services.vllm
         origin_request = {
+          http_host_header   = local.vllm_origin_hostname
           origin_server_name = local.vllm_origin_hostname
         }
       },
