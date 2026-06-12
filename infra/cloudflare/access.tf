@@ -43,6 +43,11 @@ resource "cloudflare_zero_trust_access_application" "ssh" {
   }]
 }
 
+resource "cloudflare_zero_trust_access_short_lived_certificate" "ssh" {
+  account_id = var.cloudflare_account_id
+  app_id     = cloudflare_zero_trust_access_application.ssh.id
+}
+
 resource "cloudflare_zero_trust_access_application" "vllm" {
   account_id       = var.cloudflare_account_id
   name             = "${var.host_id}-vllm"

@@ -375,6 +375,7 @@ Ansible 用には Terraform output を次のように反映する。
 ```bash
 terraform -chdir=infra/cloudflare output -raw tunnel_id
 terraform -chdir=infra/cloudflare output -raw tunnel_token
+terraform -chdir=infra/cloudflare output -raw ssh_ca_public_key
 sops secrets/infra.sops.yml
 ```
 
@@ -382,10 +383,11 @@ sops secrets/infra.sops.yml
 
 - `tunnel_id`: `cloudflared_tunnel_id`（非機密）へ反映する。
 - `tunnel_token`: `secrets/infra.sops.yml` の `cloudflared_tunnel_token` に格納する。token は機密として扱い、平文ファイルや shell history に残さない。
+- `ssh_ca_public_key`: `roles/cloudflared/files/cloudflare_ca.pub` に 1 行で反映する。公開鍵のため SOPS 格納は不要。
 
 > ⚠ vLLM/Ollama は native auth が無い。公開ホスト名には必ず Service Token ポリシーを付与してから DNS ルートを有効化すること（無認証で GPU を露出させない）。
 
-> ⚠ `roles/cloudflared/files/cloudflare_ca.pub` は初期状態がプレースホルダ。**実際の Cloudflare Access SSH CA 公開鍵に差し替えてから** playbook を llm01 に適用すること（さもないと Browser SSH が機能しない）。
+> ⚠ `roles/cloudflared/files/cloudflare_ca.pub` は初期状態がプレースホルダ。**Terraform が管理する SSH Access application の `ssh_ca_public_key` に差し替えてから** playbook を llm01 に適用すること（さもないと Browser SSH が機能しない）。
 
 ### Ansible 適用（llm01 側・再現可能）
 

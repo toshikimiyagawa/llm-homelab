@@ -14,6 +14,11 @@ output "hostnames" {
   value       = local.hostnames
 }
 
+output "ssh_ca_public_key" {
+  description = "Cloudflare Access short-lived SSH certificate CA public key for the SSH application."
+  value       = cloudflare_zero_trust_access_short_lived_certificate.ssh.public_key
+}
+
 output "service_token_client_id" {
   description = "Cloudflare Access Service Token client ID for API clients."
   value       = cloudflare_zero_trust_access_service_token.api_clients.client_id

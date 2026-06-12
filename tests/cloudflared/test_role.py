@@ -75,7 +75,10 @@ def test_sshd_ca_trust():  # AC-5
 
 
 def test_sshd_password_auth_off():  # AC-6
-    assert "PasswordAuthentication no" in SSHD_TMPL.read_text()
+    text = SSHD_TMPL.read_text()
+    assert "PasswordAuthentication no" in text
+    assert "toshi402" not in text
+    assert "AuthorizedPrincipalsCommand" not in text
     assert "validate:" in TASKS.read_text()
 
 
@@ -83,6 +86,7 @@ def test_ca_placeholder_guard():  # issue #90 footgun guard
     t = TASKS.read_text()
     assert "ansible.builtin.assert" in t
     assert "cloudflared_ssh_ca_placeholder_marker" in DEFAULTS.read_text()
+    assert "ecdsa-sha2-nistp256" in t
     # ガードは CA 配置 / sshd 設定より前に走らなければ意味がない
     guard_pos = t.index("ansible.builtin.assert")
     deploy_pos = t.index("Deploy Cloudflare Access SSH CA public key")
