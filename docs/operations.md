@@ -370,7 +370,18 @@ terraform -chdir=infra/cloudflare apply
 
 作業後、広い権限の `CLOUDFLARE_API_TOKEN` は revoke するか権限を縮小する。Terraform import/apply 後、Cloudflare UI は read-only 扱いにし、変更は Terraform PR 経由で行う。必要なら Zero Trust dashboard read-only 権限を有効化する。
 
-Ansible 用には Terraform output の tunnel ID を `cloudflared_tunnel_id`（非機密）へ反映する。Tunnel credentials JSON は `secrets/infra.sops.yml` の `cloudflared_tunnel_credentials` に格納する。
+Ansible 用には Terraform output を次のように反映する。
+
+```bash
+terraform -chdir=infra/cloudflare output -raw tunnel_id
+terraform -chdir=infra/cloudflare output -raw tunnel_token
+sops secrets/infra.sops.yml
+```
+
+`infra/cloudflare` ディレクトリ内で実行している場合は `terraform output -raw tunnel_token` で同じ値を取得できる。
+
+- `tunnel_id`: `cloudflared_tunnel_id`（非機密）へ反映する。
+- `tunnel_token`: `secrets/infra.sops.yml` の `cloudflared_tunnel_token` に格納する。token は機密として扱い、平文ファイルや shell history に残さない。
 
 > ⚠ vLLM/Ollama は native auth が無い。公開ホスト名には必ず Service Token ポリシーを付与してから DNS ルートを有効化すること（無認証で GPU を露出させない）。
 
@@ -382,7 +393,7 @@ Ansible 用には Terraform output の tunnel ID を `cloudflared_tunnel_id`（�
 ansible-playbook playbooks/22-cloudflare-tunnel.yml
 ```
 
-`roles/cloudflared` が cloudflared install / `config.yml` / systemd 常駐 / credentials 配置 / sshd の CA 信頼 + `PasswordAuthentication no` を冪等に適用する。OS 再インストール時はクラウド状態（tunnel/DNS/Access/Service Token）が残るため、上記 playbook の再実行のみで全経路が復活する。
+`roles/cloudflared` が cloudflared install / `config.yml` / systemd 常駐 / tunnel token 配置 / sshd の CA 信頼 + `PasswordAuthentication no` を冪等に適用する。OS 再インストール時はクラウド状態（tunnel/DNS/Access/Service Token）が残るため、上記 playbook の再実行のみで全経路が復活する。
 
 ### API クライアント例（Service Token）
 

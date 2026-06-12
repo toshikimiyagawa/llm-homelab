@@ -1,6 +1,6 @@
 {
   "feature": "issue-120-cloudflared-token",
   "tier": 2,
-  "phase": "tasks",
+  "phase": "verify",
   "spec": "specs/issue-120-cloudflared-token/"
 }

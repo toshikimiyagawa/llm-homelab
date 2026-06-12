@@ -13,6 +13,7 @@ ROLE = ROOT / "roles" / "cloudflared"
 DEFAULTS = ROLE / "defaults" / "main.yml"
 TASKS = ROLE / "tasks" / "main.yml"
 CONFIG_TMPL = ROLE / "templates" / "config.yml.j2"
+SERVICE_TMPL = ROLE / "templates" / "cloudflared.service.j2"
 SSHD_TMPL = ROLE / "templates" / "sshd-cloudflare.conf.j2"
 CA_PUB = ROLE / "files" / "cloudflare_ca.pub"
 PLAYBOOK = ROOT / "playbooks" / "22-cloudflare-tunnel.yml"
@@ -40,7 +41,7 @@ def test_config_is_minimal_for_cloudflare_managed_tunnel():  # issue #95
     for h in HOSTNAMES:
         assert h not in c
     assert "tunnel:" in c
-    assert "credentials-file:" in c
+    assert "credentials-file:" not in c
     assert "ingress:" not in c
 
 
@@ -48,14 +49,22 @@ def test_service_enabled():  # AC-3
     assert "enabled: true" in TASKS.read_text()
 
 
-def test_credentials_no_log_and_mode():  # AC-4
+def test_tunnel_token_no_log_and_mode():  # AC-4
     t = TASKS.read_text()
     p = PLAYBOOK.read_text()
     assert "no_log: true" in t
     assert "0600" in t
-    assert "vault_cloudflared_tunnel_credentials" in t
-    assert "cloudflared_tunnel_credentials" in p
+    assert "vault_cloudflared_tunnel_token" in t
+    assert "cloudflared_tunnel_token" in p
+    assert "cloudflared_tunnel_credentials" not in p
     assert "community.sops.load_vars" in p
+
+
+def test_systemd_uses_token_file_without_literal_token():  # issue #120
+    unit = SERVICE_TMPL.read_text()
+    assert "--token-file {{ cloudflared_token_path }}" in unit
+    assert "vault_cloudflared_tunnel_token" not in unit
+    assert "cloudflared_tunnel_token" not in unit
 
 
 def test_sshd_ca_trust():  # AC-5
@@ -84,7 +93,8 @@ def test_ca_placeholder_guard():  # issue #90 footgun guard
 def test_role_vars_use_prefix():  # AC-7 (var-naming[no-role-prefix] 回避)
     d = DEFAULTS.read_text()
     assert "cloudflared_config_path" in d
-    assert "cloudflared_credentials_path" in d
+    assert "cloudflared_token_path" in d
+    assert "cloudflared_credentials_path" not in d
 
 
 def test_playbook_uses_role():  # AC-9 連動
@@ -108,4 +118,5 @@ def test_docs_document_hostnames_and_service_token():  # M-1..M-5 docs
     for h in HOSTNAMES:
         assert h in ops
     assert "Service Token" in ops
-    assert "vault_cloudflared_tunnel_credentials" in SECURITY_DOC.read_text()
+    assert "cloudflared_tunnel_token" in SECURITY_DOC.read_text()
+    assert "vault_cloudflared_tunnel_credentials" not in SECURITY_DOC.read_text()

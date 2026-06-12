@@ -32,10 +32,10 @@
     mode: "0755"
   tags: [cloudflared]
 
-- name: Deploy cloudflared tunnel credentials
+- name: Deploy cloudflared tunnel token
   ansible.builtin.copy:
-    content: "{{ vault_cloudflared_tunnel_credentials }}"
-    dest: "{{ cloudflared_credentials_path }}"
+    content: "{{ vault_cloudflared_tunnel_token }}"
+    dest: "{{ cloudflared_token_path }}"
     owner: root
     group: root
     mode: "0600"

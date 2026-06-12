@@ -4,6 +4,11 @@ resource "cloudflare_zero_trust_tunnel_cloudflared" "llm01" {
   config_src = "cloudflare"
 }
 
+data "cloudflare_zero_trust_tunnel_cloudflared_token" "llm01" {
+  account_id = var.cloudflare_account_id
+  tunnel_id  = cloudflare_zero_trust_tunnel_cloudflared.llm01.id
+}
+
 resource "cloudflare_zero_trust_tunnel_cloudflared_config" "llm01" {
   account_id = var.cloudflare_account_id
   tunnel_id  = cloudflare_zero_trust_tunnel_cloudflared.llm01.id
