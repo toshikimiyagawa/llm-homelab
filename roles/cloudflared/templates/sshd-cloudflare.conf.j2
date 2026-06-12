@@ -3,7 +3,3 @@
 # Cloudflare Access Browser SSH の短命証明書を信頼し、パスワード認証を無効化する。
 TrustedUserCAKeys {{ cloudflared_ssh_ca_path }}
 PasswordAuthentication no
-
-Match user toshiki
-  AuthorizedPrincipalsCommand /bin/echo 'toshi402'
-  AuthorizedPrincipalsCommandUser nobody
