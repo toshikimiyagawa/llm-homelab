@@ -76,6 +76,9 @@ def test_sshd_ca_trust():  # AC-5
 
 def test_sshd_password_auth_off():  # AC-6
     assert "PasswordAuthentication no" in SSHD_TMPL.read_text()
+    assert "Match user toshiki" in SSHD_TMPL.read_text()
+    assert "AuthorizedPrincipalsCommand /bin/echo 'toshi402'" in SSHD_TMPL.read_text()
+    assert "AuthorizedPrincipalsCommandUser nobody" in SSHD_TMPL.read_text()
     assert "validate:" in TASKS.read_text()
 
 
