@@ -12,3 +12,7 @@ vllm_model_dir: Qwen3.6-35B-A3B
 # Qwen3.6-35B-A3B has a 262K native context, so no YaRN RoPE scaling is needed.
 # This is a starting value; the final value is tuned on llm01 to fit 96GB VRAM.
 vllm_max_model_len: 131072
+# Qwen3.6-35B-A3B (Gated DeltaNet / Mamba hybrid) needs one Mamba cache block per
+# decode sequence. At gpu_memory_utilization 0.90, llm01 provides 754 blocks, so
+# max_num_seqs must not exceed it or CUDA graph capture fails at startup.
+vllm_max_num_seqs: 754

@@ -38,6 +38,21 @@ def test_deployment_sets_max_model_len():
     assert "vllm_max_model_len" in content
 
 
+def test_deployment_caps_max_num_seqs_for_mamba_cache():
+    # Qwen3.6-35B-A3B uses Gated DeltaNet (Mamba) blocks; max_num_seqs must not
+    # exceed available Mamba cache blocks or CUDA graph capture fails at startup.
+    content = DEPLOYMENT_TMPL.read_text()
+    assert '"--max-num-seqs"' in content
+    assert "vllm_max_num_seqs" in content
+
+
+def test_default_max_num_seqs_within_mamba_block_limit():
+    content = DEFAULTS.read_text()
+    match = re.search(r"^vllm_max_num_seqs:\s*(\d+)", content, re.MULTILINE)
+    assert match, "vllm_max_num_seqs must be set in defaults"
+    assert int(match.group(1)) <= 754
+
+
 def test_group_vars_serves_qwen36():
     content = GROUP_VARS.read_text()
     assert "vllm_model: /models/Qwen3.6-35B-A3B" in content
