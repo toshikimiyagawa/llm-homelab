@@ -71,5 +71,5 @@ nvidia_device_plugin_daemonset_name: nvidia-device-plugin
 base_domain: "solvelio.com"
 cloudflared_tunnel_id: "7704b8bf-9b32-495d-a660-6589523fc5a6"
 
-vllm_model: /models/Qwen3-32B
-vllm_served_model_name: qwen3-32b
+vllm_model: /models/Qwen3.6-35B-A3B
+vllm_served_model_name: qwen3.6-35b-a3b

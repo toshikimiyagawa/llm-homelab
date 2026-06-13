@@ -1,16 +1,14 @@
 ---
 vllm_namespace: vllm
 vllm_image_tag: latest
-vllm_model: Qwen/Qwen3-30B-A3B
-vllm_served_model_name: default
+vllm_model: /models/Qwen3.6-35B-A3B
+vllm_served_model_name: qwen3.6-35b-a3b
 vllm_gpu_uuid: GPU-079e606a-926e-e5d4-dcd3-6322c089ef8a
 vllm_models_host_path: /opt/models
 vllm_domain: "vllm.{{ base_domain }}"
 vllm_gpu_memory_utilization: "0.90"
 vllm_port: 8000
-vllm_model_dir: Qwen3-32B
-vllm_max_model_len: 92736
-vllm_rope_scaling_dict:
-  rope_type: yarn
-  factor: 4.0
-  original_max_position_embeddings: 32768
+vllm_model_dir: Qwen3.6-35B-A3B
+# Qwen3.6-35B-A3B has a 262K native context, so no YaRN RoPE scaling is needed.
+# This is a starting value; the final value is tuned on llm01 to fit 96GB VRAM.
+vllm_max_model_len: 131072
