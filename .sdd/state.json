@@ -1,6 +1,6 @@
 {
-  "feature": "issue-120-cloudflared-token",
+  "feature": "issue-124-vllm-qwen36",
   "tier": 2,
-  "phase": "verify",
-  "spec": "specs/issue-120-cloudflared-token/"
+  "phase": "implement",
+  "spec": "specs/issue-124-vllm-qwen36/"
 }
