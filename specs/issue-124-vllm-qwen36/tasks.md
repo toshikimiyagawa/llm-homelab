@@ -56,6 +56,17 @@ TDD（RED→GREEN→REFACTOR）で進めること。
 - `docs/software-stack.md` vLLM セクション（モデル行）を `Qwen3.6-35B-A3B`（MoE 35B/3B、テキスト専用、native 262K）に更新。 → AC8
 - `docs/operations.md` の `curl` 動作確認例の `"model":"qwen3-32b"` を `"qwen3.6-35b-a3b"` に更新。 → AC9
 
+## T5b. opencode プロバイダ追従（spec 拡張 AC14–15）
+
+- `tests/opencode/test_devcontainer_config.py` の `test_qwen_model_defines_context_and_output_limits` を更新（RED）:
+  - `models` キーを `qwen3.6-35b-a3b`、`limit.context` を `131072`、`output` を `8192` に。
+- `.devcontainer/project-tools.yml` の opencode 設定を更新（GREEN）:
+  - `"model": "vllm/qwen3.6-35b-a3b"`
+  - `models` キーを `qwen3.6-35b-a3b`、`name` を `Qwen3.6-35B-A3B`
+  - `limit.context` を `131072`（`vllm_max_model_len` 起点値に追従）、`output` は `8192` 維持
+- 既存 opencode テスト（install path / config path / singular provider key / apiKey dummy）は据え置きで PASS を維持。
+→ AC14, AC15
+
 ## T6. 静的検証（GREEN 確認）
 
 - `uvx pytest tests/vllm/test_role.py` が全 PASS。 → AC1–9

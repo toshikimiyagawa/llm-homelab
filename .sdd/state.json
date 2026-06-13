@@ -1,6 +1,5 @@
 {
-  "feature": "issue-124-vllm-qwen36",
-  "tier": 2,
-  "phase": "implement",
-  "spec": "specs/issue-124-vllm-qwen36/"
+  "tier": 0,
+  "phase": "done",
+  "note": "no active feature"
 }

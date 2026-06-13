@@ -33,6 +33,11 @@ vLLM が提供するメインモデルを Qwen3-32B（dense）から **Qwen3.6-3
 8. `docs/software-stack.md` の vLLM セクションのモデル記載が Qwen3.6-35B-A3B を反映する。
 9. `docs/operations.md` の動作確認 `curl` 例の `"model"` 値が `qwen3.6-35b-a3b` である。
 
+### opencode プロバイダ追従（静的・テスト対象 / 2026-06-14 spec 拡張）
+
+14. `.devcontainer/project-tools.yml` の opencode 設定で、`model` が `vllm/qwen3.6-35b-a3b`、`provider.vllm.models` のキーが `qwen3.6-35b-a3b` である。
+15. 同 opencode 設定の `limit.context` が `vllm_max_model_len` 起点値（`131072`）に追従し、旧値 `92736` を含まない（`output` は `8192` 維持）。
+
 ### ランタイム（実機 playbook で検証・テスト対象外）
 
 10. `ansible-playbook playbooks/09-vllm.yml` 実行後、vLLM Pod が `Running` になり rollout が成功する。

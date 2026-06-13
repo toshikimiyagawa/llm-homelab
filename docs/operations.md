@@ -405,7 +405,7 @@ curl https://vllm-llm01.solvelio.com/v1/chat/completions \
   -H "CF-Access-Client-Secret: <CLIENT_SECRET>" \
   -H "Authorization: Bearer dummy" \
   -H "Content-Type: application/json" \
-  -d '{"model":"qwen3-32b","stream":true,"messages":[{"role":"user","content":"hi"}]}'
+  -d '{"model":"qwen3.6-35b-a3b","stream":true,"messages":[{"role":"user","content":"hi"}]}'
 ```
 
 Ollama も同様に `CF-Access-Client-Id` / `CF-Access-Client-Secret` を付与する。

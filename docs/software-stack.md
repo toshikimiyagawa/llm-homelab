@@ -51,7 +51,7 @@ k3s Deployment として `vllm` namespace に導入する。
 |------|--------|
 | image | `vllm/vllm-openai:latest` |
 | GPU | RTX Pro 6000（UUID: `GPU-079e606a-926e-e5d4-dcd3-6322c089ef8a`） |
-| モデル | `/opt/models` に手動配置（例: `Qwen/Qwen3-30B-A3B`） |
+| モデル | `Qwen3.6-35B-A3B`（MoE 35B/3B、テキスト専用）を `/opt/models` に手動配置。native 262K コンテキスト |
 | API | OpenAI 互換（`/v1/chat/completions`, `/v1/models`） |
 
 アクセス URL（要 Tailscale 接続）:

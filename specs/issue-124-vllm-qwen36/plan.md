@@ -17,6 +17,8 @@
 | `tests/vllm/test_role.py` | YaRN 関連テストを「YaRN 不在」検証に置換、max_model_len / model_dir テストを更新 |
 | `docs/software-stack.md` | vLLM セクションのモデル記載を更新 |
 | `docs/operations.md` | `curl` 動作確認例の model 名を更新 |
+| `.devcontainer/project-tools.yml` | opencode プロバイダの model 名 / models キー / context を更新（spec 拡張 AC14–15） |
+| `tests/opencode/test_devcontainer_config.py` | 旧 `qwen3-32b` / `92736` 検証を Qwen3.6 値に更新 |
 
 ## トレードオフ / 代替案
 
