@@ -419,6 +419,13 @@ curl http://<llm01-lan-ip>:8080/health
 
 vLLM は環境の公開方法に合わせ、WARP 越しに LAN IP / port または LAN 内向け reverse proxy へ接続する。
 
+```bash
+curl http://<llm01-lan-ip>:<vllm-port>/v1/chat/completions \
+  -H "Authorization: Bearer dummy" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"qwen3.6-35b-a3b","stream":true,"messages":[{"role":"user","content":"hi"}]}'
+```
+
 ### 運用検証チェックリスト
 
 - [ ] W-1: Cloudflare One client が `allowed_email` で enroll できる
