@@ -79,7 +79,8 @@ def test_ingress_uses_open_webui_domain_and_tls():
 def test_software_stack_documents_open_webui():
     content = SOFTWARE_DOC.read_text()
     assert "Open WebUI" in content
-    assert "open-webui.solvelio.com" in content
+    assert "http://<llm01-lan-ip>:8080" in content
+    assert "Cloudflare WARP" in content
     assert "/opt/open-webui-data" in content
 
 

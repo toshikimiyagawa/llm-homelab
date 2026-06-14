@@ -1,5 +1,7 @@
 {
-  "tier": 0,
-  "phase": "done",
-  "note": "no active feature"
+  "feature": "issue-128-warp-private-network",
+  "tier": 2,
+  "phase": "implement",
+  "spec": "specs/issue-128-warp-private-network/",
+  "note": "Frozen design handoff for GitHub issue #128"
 }
