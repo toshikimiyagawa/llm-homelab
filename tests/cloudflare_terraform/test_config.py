@@ -29,6 +29,7 @@ def test_tfvars_example_is_domain_portable():
         "domain",
         "host_id",
         "allowed_email",
+        "allowed_emails",
         "access_team_name",
     ]:
         assert key in text
@@ -89,20 +90,35 @@ def test_warp_enrollment_application_is_limited_to_allowed_email():
     assert 'resource "cloudflare_zero_trust_access_application" "warp_enrollment"' in text
     assert re.search(r'type\s*=\s*"warp"', text)
     assert "cloudflare_zero_trust_access_policy.warp_enrollment.id" in text
-    assert "allowed_email" in text
+    assert "allowed_warp_emails" in text
+    assert "var.allowed_email" in text
+    assert "var.allowed_emails" in text
+    assert "for email in local.allowed_warp_emails" in text
 
 
 def test_warp_device_profile_includes_private_network_only():
     text = read_all_tf()
     assert 'resource "cloudflare_zero_trust_device_custom_profile" "llm01_warp"' in text
     assert "identity.email" in text
-    assert "var.allowed_email" in text
+    assert "allowed_warp_email_match" in text
     assert "service_mode_v2" in text
     assert 'mode = "warp"' in text
     assert "include = [{" in text
     assert "address     = var.warp_private_network_cidr" in text or "address = var.warp_private_network_cidr" in text
     for forbidden in ["10.42.0.0", "10.43.0.0", "cluster", "pod cidr", "service cidr"]:
         assert forbidden not in text.lower()
+
+
+def test_warp_identity_variables_are_portable_and_do_not_commit_real_emails():
+    variables = (TF / "variables.tf").read_text()
+    example = (TF / "terraform.tfvars.example").read_text()
+    text = read_all_tf() + "\n" + example
+    assert 'variable "allowed_emails"' in variables
+    assert "Additional exact email identities allowed to enroll WARP devices." in variables
+    assert "allowed_warp_emails" in text
+    assert "distinct(concat([var.allowed_email], var.allowed_emails))" in text
+    assert "allowed_warp_email_match" in text
+    assert re.search(r'allowed_emails\s*=\s*\["user2@example.com"\]', example)
 
 
 def test_public_hostname_access_resources_are_removed():

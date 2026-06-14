@@ -24,6 +24,12 @@ variable "allowed_email" {
   type        = string
 }
 
+variable "allowed_emails" {
+  description = "Additional exact email identities allowed to enroll WARP devices."
+  type        = list(string)
+  default     = []
+}
+
 variable "access_team_name" {
   description = "Cloudflare Zero Trust team name."
   type        = string
