@@ -15,10 +15,3 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_route" "llm01_lan" {
   network    = var.warp_private_network_cidr
   comment    = "${var.host_id} LAN via WARP"
 }
-
-resource "cloudflare_zero_trust_tunnel_cloudflared_config" "llm01" {
-  account_id = var.cloudflare_account_id
-  tunnel_id  = cloudflare_zero_trust_tunnel_cloudflared.llm01.id
-
-  config = {}
-}
