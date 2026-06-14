@@ -12,7 +12,7 @@ resource "cloudflare_zero_trust_access_policy" "warp_enrollment" {
 
 resource "cloudflare_zero_trust_access_application" "warp_enrollment" {
   account_id = var.cloudflare_account_id
-  name       = "${var.host_id}-warp-enrollment"
+  name       = "Warp Login App"
   type       = "warp"
 
   policies = [{
