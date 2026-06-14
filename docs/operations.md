@@ -428,8 +428,11 @@ curl http://<llm01-lan-ip>:<vllm-port>/v1/chat/completions \
 
 Hermes agent などから検索 tool を使わせる場合、vLLM Deployment は
 `--enable-auto-tool-choice`、`--reasoning-parser qwen3`、
-`--tool-call-parser qwen3_coder` で起動している必要がある。検索が必要な
-質問で tool が呼ばれない場合は、まず Deployment args と vLLM Pod の
+`--tool-call-parser qwen3_coder`、
+`--default-chat-template-kwargs '{"enable_thinking": false}'` で起動している
+必要がある。実機確認では `enable_thinking=false` なしだと `tool_choice:auto`
+は受理されても `tool_calls: []` になり、reasoning のみが返った。検索が
+必要な質問で tool が呼ばれない場合は、まず Deployment args と vLLM Pod の
 rollout 後ログを確認する。
 
 OpenAI-compatible API で tool choice が受理されるかは、WARP 接続後に

@@ -57,8 +57,10 @@ k3s Deployment として `vllm` namespace に導入する。
 
 Hermes agent など OpenAI-compatible tool calling client から利用するため、
 vLLM は `--enable-auto-tool-choice`、`--reasoning-parser qwen3`、
-`--tool-call-parser qwen3_coder` を付けて起動する。`hermes` parser は
-Qwen3.6 の agentic tool calling では使わない。
+`--tool-call-parser qwen3_coder` を付けて起動する。さらに
+`--default-chat-template-kwargs '{"enable_thinking": false}'` を指定し、検索
+tool などを呼ぶ場面で reasoning のみを返して tool call しない挙動を避ける。
+`hermes` parser は Qwen3.6 の agentic tool calling では使わない。
 
 アクセス URL（要 Cloudflare WARP 接続）:
 
