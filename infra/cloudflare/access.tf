@@ -3,9 +3,9 @@ resource "cloudflare_zero_trust_access_policy" "warp_enrollment" {
   name       = "${var.host_id}-warp-enrollment"
   decision   = "allow"
 
-  include = [{
+  include = [for email in local.allowed_warp_emails : {
     email = {
-      email = var.allowed_email
+      email = email
     }
   }]
 }
@@ -27,7 +27,7 @@ resource "cloudflare_zero_trust_device_custom_profile" "llm01_warp" {
   description       = "Route ${var.host_id} private network traffic through Cloudflare WARP."
   enabled           = true
   precedence        = 1
-  match             = "identity.email == \"${var.allowed_email}\""
+  match             = "identity.email in {${local.allowed_warp_email_match}}"
   allow_mode_switch = false
   allowed_to_leave  = false
 
