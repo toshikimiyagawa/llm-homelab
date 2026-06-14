@@ -13,6 +13,12 @@ after Terraform takes ownership.
 - WARP device enrollment policy/application for `allowed_email`
 - WARP device custom profile with Split Tunnel Include for `warp_private_network_cidr`
 
+Terraform does not manage Cloudflare Tunnel public hostname ingress config for
+this WARP-only path. The tunnel config should not contain public hostnames for
+`llm01`; if Cloudflare requires a config object, keep only a catch-all
+`http_status:404` ingress and WARP routing enabled through the Cloudflare API or
+dashboard.
+
 The Cloudflare account, Zero Trust team, and existing Google IdP are
 prerequisites. They are not created here.
 
@@ -88,7 +94,6 @@ dashboard in read-only mode.
 
 ```bash
 terraform -chdir=infra/cloudflare import cloudflare_zero_trust_tunnel_cloudflared.llm01 <account_id>/<tunnel_id>
-terraform -chdir=infra/cloudflare import cloudflare_zero_trust_tunnel_cloudflared_config.llm01 <account_id>/<tunnel_id>
 ```
 
 After each import batch, inspect state:

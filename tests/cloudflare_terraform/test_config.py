@@ -39,8 +39,7 @@ def test_tunnel_is_cloudflare_managed_without_public_hostname_ingress():
     text = read_all_tf()
     assert "cloudflare_zero_trust_tunnel_cloudflared" in text
     assert 'config_src = "cloudflare"' in text
-    assert "cloudflare_zero_trust_tunnel_cloudflared_config" in text
-    assert "config = {}" in text
+    assert "cloudflare_zero_trust_tunnel_cloudflared_config" not in text
     assert "ingress" not in (TF / "tunnel.tf").read_text()
     assert "origin_server_name" not in text
     assert "cfargotunnel.com" not in text
