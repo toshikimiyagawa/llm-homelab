@@ -40,6 +40,7 @@ RTX Pro 6000装着後は、GPU UUIDをinventoryに記録する。
 - Prometheus
 - Grafana
 - node-exporter
+- Cloudflare WARP
 - Tailscale
 - Antec Flux Pro温度ディスプレイ
 
@@ -54,13 +55,9 @@ k3s Deployment として `vllm` namespace に導入する。
 | モデル | `Qwen3.6-35B-A3B`（MoE 35B/3B、テキスト専用）を `/opt/models` に手動配置。native 262K コンテキスト |
 | API | OpenAI 互換（`/v1/chat/completions`, `/v1/models`） |
 
-アクセス URL（要 Tailscale 接続）:
+アクセス URL（要 Cloudflare WARP 接続）:
 
-- API: `https://vllm.solvelio.com/v1`
-
-事前に Cloudflare で以下の DNS A レコードを手動登録する（Tailscale IP）:
-
-- `vllm.solvelio.com` → `100.107.191.51`
+- API: `http://<llm01-lan-ip>:<vllm-port>/v1` または LAN 内向け reverse proxy の URL
 
 Ansible での適用:
 
@@ -75,9 +72,9 @@ Open WebUI は k3s Deployment として `open-webui` namespace に導入し、vL
 | 項目 | 設定値 |
 |------|--------|
 | image | `ghcr.io/open-webui/open-webui:main` |
-| URL | `https://open-webui.solvelio.com` |
+| URL | `http://<llm01-lan-ip>:8080`（Cloudflare WARP 経由） |
 | 永続化 | `/opt/open-webui-data` を `/app/backend/data` に hostPath mount |
-| vLLM 接続 | `https://vllm.solvelio.com/v1` (`OPENAI_API_BASE_URLS`) |
+| vLLM 接続 | LAN 内向け vLLM URL (`OPENAI_API_BASE_URLS`) |
 | Ollama 接続 | `http://llm01:11434` (`OLLAMA_BASE_URLS`) |
 
 Open WebUI のユーザー、設定、SQLite データベースは `/opt/open-webui-data` に保持する。replica は hostPath とローカル state 前提のため 1 に固定する。
@@ -86,13 +83,9 @@ Ollama は認証なし API を外部公開しないため `127.0.0.1:11434` の�
 
 Open WebUI の全体デフォルト推論パラメータは `DEFAULT_MODEL_PARAMS` で与え、`max_tokens` は `8192` に固定する。これは `vLLM` の `max_model_len=40960` を長い会話履歴で超えにくくするための初期値で、必要な場合は Open WebUI のモデルごとの設定で上書きする。
 
-アクセス URL（要 Tailscale 接続）:
+アクセス URL（要 Cloudflare WARP 接続）:
 
-- UI: `https://open-webui.solvelio.com`
-
-事前に Cloudflare で以下の DNS A レコードを手動登録する（Tailscale IP）:
-
-- `open-webui.solvelio.com` to `100.107.191.51`
+- UI: `http://<llm01-lan-ip>:8080`
 
 Ansible での適用:
 
@@ -100,10 +93,30 @@ Ansible での適用:
 ansible-playbook playbooks/21-open-webui.yml
 ```
 
+### Cloudflare WARP
+
+Cloudflare WARP（Cloudflare One client）をリモートアクセスの主経路にする。Cloudflare 側は `infra/cloudflare/` の Terraform で管理し、既存 `llm01` Tunnel に `warp_private_network_cidr` を private network route として紐付ける。
+
+| 項目 | 設定値 |
+|------|--------|
+| 主用途 | OS レベル接続（SSH / vLLM / Ollama / Open WebUI） |
+| device enrollment | `allowed_email` の identity のみ許可 |
+| Split Tunnel | Include: `warp_private_network_cidr` |
+| 実環境 CIDR | `192.168.0.0/17`（local `terraform.tfvars` にのみ保存） |
+| 注意 | 接続元 LAN と CIDR が重複すると経路衝突しうる |
+
+確認:
+
+```bash
+warp-cli status
+warp-cli settings
+```
+
 ### Tailscale
 
 公式 APT リポジトリ（`https://pkgs.tailscale.com/stable/ubuntu`）からインストールする。
 `tailscaled.service` を systemd で管理し、再起動後も自動復帰する。
+Cloudflare WARP 移行後も当面併存し、主経路ではなく切り戻しや緊急対応のための parallel path として残す。
 
 | 項目 | 設定値 |
 |------|--------|
@@ -134,10 +147,10 @@ k3s HelmChart addon として `monitoring` namespace に導入する。
 | kube-prometheus-stack | prometheus-community/kube-prometheus-stack v68.x | monitoring |
 | DCGM Exporter | nvidia/dcgm-exporter v3.3.x | monitoring |
 
-アクセス URL（要 Tailscale 接続）:
+アクセス URL（要 Cloudflare WARP 接続）:
 
-- Grafana: `https://grafana.solvelio.com`
-- Prometheus: `https://prometheus.solvelio.com`
+- Grafana: `http://<llm01-lan-ip>:<grafana-port>`
+- Prometheus: `http://<llm01-lan-ip>:<prometheus-port>`
 
 TLS 証明書は cert-manager が Let's Encrypt DNS01 チャレンジ（Cloudflare）で自動取得する。
 
@@ -146,11 +159,6 @@ Ansible での適用:
 ```bash
 ansible-playbook playbooks/08-prometheus.yml
 ```
-
-事前に Cloudflare で以下の DNS A レコードを手動登録する（Tailscale IP）:
-
-- `grafana.solvelio.com` → `100.107.191.51`
-- `prometheus.solvelio.com` → `100.107.191.51`
 
 Antec Flux Pro の温度表示は Linux ネイティブ実装として
 `nishtahir/antec-flux-pro-display` を採用する。

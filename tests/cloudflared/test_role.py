@@ -22,13 +22,6 @@ SITE = ROOT / "playbooks" / "site.yml"
 OPS_DOC = ROOT / "docs" / "operations.md"
 SECURITY_DOC = ROOT / "docs" / "security-and-secrets.md"
 
-HOSTNAMES = [
-    "open-webui-llm01.solvelio.com",
-    "ollama-llm01.solvelio.com",
-    "vllm-llm01.solvelio.com",
-    "ssh-llm01.solvelio.com",
-]
-
 
 def test_apt_install_present():  # AC-1
     t = TASKS.read_text()
@@ -38,11 +31,13 @@ def test_apt_install_present():  # AC-1
 
 def test_config_is_minimal_for_cloudflare_managed_tunnel():  # issue #95
     c = CONFIG_TMPL.read_text()
-    for h in HOSTNAMES:
-        assert h not in c
     assert "tunnel:" in c
     assert "credentials-file:" not in c
     assert "ingress:" not in c
+    assert "open-webui-llm01" not in c
+    assert "ollama-llm01" not in c
+    assert "vllm-llm01" not in c
+    assert "ssh-llm01" not in c
 
 
 def test_service_enabled():  # AC-3
@@ -117,10 +112,11 @@ def test_smoke_asserts_runtime():  # AC-10
     assert "cloudflared" in s
 
 
-def test_docs_document_hostnames_and_service_token():  # M-1..M-5 docs
+def test_docs_document_warp_and_not_public_access_primary_path():
     ops = OPS_DOC.read_text()
-    for h in HOSTNAMES:
-        assert h in ops
-    assert "Service Token" in ops
+    assert "Cloudflare WARP" in ops
+    assert "Cloudflare One client" in ops
+    assert "Service Token" not in ops or "旧" in ops
+    assert "Browser SSH" not in ops or "旧" in ops
     assert "cloudflared_tunnel_token" in SECURITY_DOC.read_text()
     assert "vault_cloudflared_tunnel_credentials" not in SECURITY_DOC.read_text()

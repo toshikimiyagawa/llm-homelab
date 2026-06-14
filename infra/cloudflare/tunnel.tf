@@ -9,38 +9,16 @@ data "cloudflare_zero_trust_tunnel_cloudflared_token" "llm01" {
   tunnel_id  = cloudflare_zero_trust_tunnel_cloudflared.llm01.id
 }
 
+resource "cloudflare_zero_trust_tunnel_cloudflared_route" "llm01_lan" {
+  account_id = var.cloudflare_account_id
+  tunnel_id  = cloudflare_zero_trust_tunnel_cloudflared.llm01.id
+  network    = var.warp_private_network_cidr
+  comment    = "${var.host_id} LAN via WARP"
+}
+
 resource "cloudflare_zero_trust_tunnel_cloudflared_config" "llm01" {
   account_id = var.cloudflare_account_id
   tunnel_id  = cloudflare_zero_trust_tunnel_cloudflared.llm01.id
 
-  config = {
-    ingress = [
-      {
-        hostname = local.hostnames.open_webui
-        service  = local.tunnel_services.open_webui
-      },
-      {
-        hostname = local.hostnames.ollama
-        service  = local.tunnel_services.ollama
-        origin_request = {
-          http_host_header = "localhost"
-        }
-      },
-      {
-        hostname = local.hostnames.vllm
-        service  = local.tunnel_services.vllm
-        origin_request = {
-          http_host_header   = local.vllm_origin_hostname
-          origin_server_name = local.vllm_origin_hostname
-        }
-      },
-      {
-        hostname = local.hostnames.ssh
-        service  = local.tunnel_services.ssh
-      },
-      {
-        service = var.tunnel_catch_all_service
-      }
-    ]
-  }
+  config = {}
 }

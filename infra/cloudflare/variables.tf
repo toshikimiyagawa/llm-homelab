@@ -29,6 +29,11 @@ variable "access_team_name" {
   type        = string
 }
 
+variable "warp_private_network_cidr" {
+  description = "Cloudflare WARP private network CIDR routed to llm01 through the Cloudflare Tunnel."
+  type        = string
+}
+
 variable "open_webui_backend_url" {
   description = "Origin URL for Open WebUI through the tunnel."
   type        = string

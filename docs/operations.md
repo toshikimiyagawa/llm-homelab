@@ -318,26 +318,19 @@ Open WebUI から vLLM の Qwen を使う場合、`max_tokens=32000` のよう�
 2. 長い会話では、新しいチャットを開始するか、履歴を要約してから続ける。
 3. モデルごとに出力上限を変えたい場合は、Open WebUI のモデル設定で上書きする。
 
-## 外部アクセス（Cloudflare Tunnel + Access）
+## 外部アクセス（Cloudflare WARP private network）
 
-会社管理 Mac（ソフト導入不可・ブラウザと標準 `ssh` のみ・外出先 outbound 443 のみ）から llm01 へアクセスするための経路（issue #88）。`cloudflared` が llm01 から外向きにトンネルを張り、ルーターのインバウンド開放を行わない。既存の Tailscale 経路（`open-webui.solvelio.com` / `vllm.solvelio.com`）はそのまま併存する。
+`llm01` への主な外部アクセス経路は Cloudflare WARP private network とする（issue #128）。端末に Cloudflare One client を導入し、Zero Trust team に `allowed_email` で enroll する。`warp_private_network_cidr` の traffic だけを Split Tunnel Include で WARP に流し、ルーターのインバウンド開放は行わない。
 
-### 公開ホスト名
-
-| サービス | ホスト名 | backend | 認証 |
-|----------|----------|---------|------|
-| Open WebUI | `open-webui-llm01.solvelio.com` | `http://localhost:8080` | Access: Google ログイン |
-| SSH | `ssh-llm01.solvelio.com` | `ssh://localhost:22`（Browser SSH） | Access: Google + 短命 SSH 証明書 |
-| vLLM | `vllm-llm01.solvelio.com` | Traefik 経由 | Access: Service Token |
-| Ollama | `ollama-llm01.solvelio.com` | `http://localhost:11434` | Access: Service Token |
+Tailscale は今回撤去しない。当面は併存経路として残し、WARP 側の切り戻しや緊急対応で利用できる状態を維持する。
 
 ### Cloudflare 側 Terraform 適用
 
-Cloudflare 側の Tunnel / DNS / Access / Service Token は `infra/cloudflare/` の Terraform を正本にする（issue #95）。Cloudflare UI で作成・変更しない。既存リソースがある場合は `terraform import` で state に取り込む。
+Cloudflare 側の Tunnel / WARP route / device enrollment / device profile は `infra/cloudflare/` の Terraform を正本にする。Cloudflare UI で作成・変更しない。
 
 前提:
 
-- Cloudflare account / zone / domain は存在している
+- Cloudflare account / Zero Trust team は存在している
 - Zero Trust の Google IdP は設定済み
 - `CLOUDFLARE_API_TOKEN` は環境変数で一時的に渡す
 - `infra/cloudflare/terraform.tfstate` は secret として扱い commit しない
@@ -348,12 +341,19 @@ export CLOUDFLARE_API_TOKEN="<temporary-token>"
 terraform -chdir=infra/cloudflare init
 ```
 
-`infra/cloudflare/terraform.tfvars` に account ID / zone ID / domain / host ID / allowed email を設定する。既存の Tunnel / DNS / Access / Service Token がある場合は、`infra/cloudflare/README.md` の resource address 一覧に従って `terraform import` を実行する。
+`infra/cloudflare/terraform.tfvars` に account ID / zone ID / domain / host ID / allowed email / WARP private network CIDR を設定する。`llm01` の実環境では次の CIDR を使う。
+
+```hcl
+warp_private_network_cidr = "192.168.0.0/17"
+```
+
+`192.168.0.0/17` は接続元 LAN と衝突しうる。WARP 接続中にローカルネットワークや `llm01` への到達に問題がある場合は、`warp_private_network_cidr` をより狭い範囲に変更して再適用する。
+
+既存 Tunnel がある場合は import する。
 
 ```bash
 terraform -chdir=infra/cloudflare import cloudflare_zero_trust_tunnel_cloudflared.llm01 <account_id>/<tunnel_id>
-terraform -chdir=infra/cloudflare import 'cloudflare_dns_record.tunnel["open_webui"]' <zone_id>/<record_id>
-terraform -chdir=infra/cloudflare import cloudflare_zero_trust_access_application.open_webui <account_id>/<application_id>
+terraform -chdir=infra/cloudflare import cloudflare_zero_trust_tunnel_cloudflared_config.llm01 <account_id>/<tunnel_id>
 ```
 
 import 後または未作成環境では plan を確認する。
@@ -362,7 +362,7 @@ import 後または未作成環境では plan を確認する。
 terraform -chdir=infra/cloudflare plan
 ```
 
-意図しない destroy / replacement が出たら `terraform apply` せず STOP する。差分が意図通りなら適用する。
+旧公開 hostname 経路から移行する場合、旧 DNS / public-hostname Access resources の destroy は意図した差分である。それ以外の意図しない destroy / replacement が出たら `terraform apply` せず STOP する。差分が意図通りなら適用する。
 
 ```bash
 terraform -chdir=infra/cloudflare apply
@@ -375,7 +375,6 @@ Ansible 用には Terraform output を次のように反映する。
 ```bash
 terraform -chdir=infra/cloudflare output -raw tunnel_id
 terraform -chdir=infra/cloudflare output -raw tunnel_token
-terraform -chdir=infra/cloudflare output -raw ssh_ca_public_key
 sops secrets/infra.sops.yml
 ```
 
@@ -383,11 +382,6 @@ sops secrets/infra.sops.yml
 
 - `tunnel_id`: `cloudflared_tunnel_id`（非機密）へ反映する。
 - `tunnel_token`: `secrets/infra.sops.yml` の `cloudflared_tunnel_token` に格納する。token は機密として扱い、平文ファイルや shell history に残さない。
-- `ssh_ca_public_key`: `roles/cloudflared/files/cloudflare_ca.pub` に 1 行で反映する。公開鍵のため SOPS 格納は不要。
-
-> ⚠ vLLM/Ollama は native auth が無い。公開ホスト名には必ず Service Token ポリシーを付与してから DNS ルートを有効化すること（無認証で GPU を露出させない）。
-
-> ⚠ `roles/cloudflared/files/cloudflare_ca.pub` は初期状態がプレースホルダ。**Terraform が管理する SSH Access application の `ssh_ca_public_key` に差し替えてから** playbook を llm01 に適用すること（さもないと Browser SSH が機能しない）。
 
 ### Ansible 適用（llm01 側・再現可能）
 
@@ -395,28 +389,46 @@ sops secrets/infra.sops.yml
 ansible-playbook playbooks/22-cloudflare-tunnel.yml
 ```
 
-`roles/cloudflared` が cloudflared install / `config.yml` / systemd 常駐 / tunnel token 配置 / sshd の CA 信頼 + `PasswordAuthentication no` を冪等に適用する。OS 再インストール時はクラウド状態（tunnel/DNS/Access/Service Token）が残るため、上記 playbook の再実行のみで全経路が復活する。
+`roles/cloudflared` が cloudflared install / `config.yml` / systemd 常駐 / tunnel token 配置 / sshd hardening を冪等に適用する。Cloudflare 側の private network route は Terraform が管理する。
 
-### API クライアント例（Service Token）
+### Cloudflare One client 接続
+
+端末に Cloudflare One client を導入し、Zero Trust team に `allowed_email` で enroll する。device profile の変更は反映まで数分かかることがある。
 
 ```bash
-curl https://vllm-llm01.solvelio.com/v1/chat/completions \
-  -H "CF-Access-Client-Id: <CLIENT_ID>.access" \
-  -H "CF-Access-Client-Secret: <CLIENT_SECRET>" \
-  -H "Authorization: Bearer dummy" \
-  -H "Content-Type: application/json" \
-  -d '{"model":"qwen3.6-35b-a3b","stream":true,"messages":[{"role":"user","content":"hi"}]}'
+warp-cli status
+warp-cli settings
 ```
 
-Ollama も同様に `CF-Access-Client-Id` / `CF-Access-Client-Secret` を付与する。
+`warp-cli settings` で WARP profile と `warp_private_network_cidr` の Split Tunnel Include が反映されていることを確認する。
 
-### 運用検証チェックリスト（M-1〜M-5）
+### 接続方法
 
-- [ ] M-1: 外出先 Mac のブラウザ（outbound 443 のみ）から Access(Google) 認証経由で `open-webui-llm01.solvelio.com` が開ける
-- [ ] M-2: 同 Mac のブラウザから Browser SSH（`ssh-llm01.solvelio.com`）で llm01 にログインできる（outbound 22 ブロックでも可）
-- [ ] M-3: Service Token 付きで `vllm-llm01.solvelio.com` / `ollama-llm01.solvelio.com` が応答し、トークン無しは 403
-- [ ] M-4: ルーターのインバウンド開放がゼロ
-- [ ] M-5: OS 再インストール後、`ansible-playbook playbooks/22-cloudflare-tunnel.yml` 再実行のみで M-1〜M-3 が復活
+SSH は標準 ssh で LAN IP に接続する。
+
+```bash
+ssh <user>@<llm01-lan-ip>
+```
+
+vLLM / Ollama / Open WebUI は WARP 越しに LAN IP / port へ接続する。WARP 経路では追加の Access header は不要。
+
+```bash
+curl http://<llm01-lan-ip>:11434/
+curl http://<llm01-lan-ip>:8080/health
+```
+
+vLLM は環境の公開方法に合わせ、WARP 越しに LAN IP / port または LAN 内向け reverse proxy へ接続する。
+
+### 運用検証チェックリスト
+
+- [ ] W-1: Cloudflare One client が `allowed_email` で enroll できる
+- [ ] W-2: `warp-cli status` が接続状態を示す
+- [ ] W-3: `warp-cli settings` に `warp_private_network_cidr` の Split Tunnel Include がある
+- [ ] W-4: WARP 接続状態で `ssh <user>@<llm01-lan-ip>` に標準 ssh でログインできる
+- [ ] W-5: WARP 接続状態で Ollama / Open WebUI へ LAN 経由で到達できる
+- [ ] W-6: vLLM へ WARP 経由で到達できる
+- [ ] W-7: ルーターのインバウンド開放がゼロ
+- [ ] W-8: Tailscale が削除されておらず、併存経路として残っている
 
 ### ランタイムスモークテスト（llm01 側）
 

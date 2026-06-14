@@ -1,89 +1,42 @@
-resource "cloudflare_zero_trust_access_service_token" "api_clients" {
+resource "cloudflare_zero_trust_access_policy" "warp_enrollment" {
   account_id = var.cloudflare_account_id
-  name       = "${var.host_id}-api-clients"
-}
+  name       = "${var.host_id}-warp-enrollment"
+  decision   = "allow"
 
-resource "cloudflare_zero_trust_access_application" "open_webui" {
-  account_id       = var.cloudflare_account_id
-  name             = "${var.host_id}-open-webui"
-  domain           = local.hostnames.open_webui
-  type             = "self_hosted"
-  session_duration = "24h"
-
-  policies = [{
-    name       = "${var.host_id}-open-webui-google"
-    decision   = "allow"
-    precedence = 1
-
-    include = [{
-      email = {
-        email = var.allowed_email
-      }
-    }]
+  include = [{
+    email = {
+      email = var.allowed_email
+    }
   }]
 }
 
-resource "cloudflare_zero_trust_access_application" "ssh" {
-  account_id       = var.cloudflare_account_id
-  name             = "${var.host_id}-ssh"
-  domain           = local.hostnames.ssh
-  type             = "ssh"
-  session_duration = "24h"
-
-  policies = [{
-    name       = "${var.host_id}-ssh-google"
-    decision   = "allow"
-    precedence = 1
-
-    include = [{
-      email = {
-        email = var.allowed_email
-      }
-    }]
-  }]
-}
-
-resource "cloudflare_zero_trust_access_short_lived_certificate" "ssh" {
+resource "cloudflare_zero_trust_access_application" "warp_enrollment" {
   account_id = var.cloudflare_account_id
-  app_id     = cloudflare_zero_trust_access_application.ssh.id
-}
-
-resource "cloudflare_zero_trust_access_application" "vllm" {
-  account_id       = var.cloudflare_account_id
-  name             = "${var.host_id}-vllm"
-  domain           = local.hostnames.vllm
-  type             = "self_hosted"
-  session_duration = "24h"
+  name       = "${var.host_id}-warp-enrollment"
+  type       = "warp"
 
   policies = [{
-    name       = "${var.host_id}-vllm-service-auth"
-    decision   = "non_identity"
+    id         = cloudflare_zero_trust_access_policy.warp_enrollment.id
     precedence = 1
-
-    include = [{
-      service_token = {
-        token_id = cloudflare_zero_trust_access_service_token.api_clients.id
-      }
-    }]
   }]
 }
 
-resource "cloudflare_zero_trust_access_application" "ollama" {
-  account_id       = var.cloudflare_account_id
-  name             = "${var.host_id}-ollama"
-  domain           = local.hostnames.ollama
-  type             = "self_hosted"
-  session_duration = "24h"
+resource "cloudflare_zero_trust_device_custom_profile" "llm01_warp" {
+  account_id        = var.cloudflare_account_id
+  name              = "${var.host_id}-warp-private-network"
+  description       = "Route ${var.host_id} private network traffic through Cloudflare WARP."
+  enabled           = true
+  precedence        = 1
+  match             = "identity.email == \"${var.allowed_email}\""
+  allow_mode_switch = false
+  allowed_to_leave  = false
 
-  policies = [{
-    name       = "${var.host_id}-ollama-service-auth"
-    decision   = "non_identity"
-    precedence = 1
+  service_mode_v2 = {
+    mode = "warp"
+  }
 
-    include = [{
-      service_token = {
-        token_id = cloudflare_zero_trust_access_service_token.api_clients.id
-      }
-    }]
+  include = [{
+    address     = var.warp_private_network_cidr
+    description = "${var.host_id} private network"
   }]
 }
