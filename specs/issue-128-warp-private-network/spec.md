@@ -1,6 +1,6 @@
 # Spec: issue-128 - Cloudflare WARP private network for llm01
 
-**Status**: draft
+**Status**: frozen
 **Tier**: 2
 **Issue**: #128
 **Created**: 2026-06-14

@@ -118,5 +118,13 @@
     "status": "completed",
     "handoff": "specs/issue-120-cloudflared-token/handoff.md",
     "blocked_reason": null
+  },
+  {
+    "id": "issue-128-warp-private-network",
+    "phase": "tasks",
+    "assigned_agent": "codex",
+    "status": "pending",
+    "handoff": "specs/issue-128-warp-private-network/handoff.md",
+    "blocked_reason": null
   }
 ]
