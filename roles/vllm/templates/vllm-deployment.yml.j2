@@ -39,6 +39,8 @@ spec:
             - "--enable-auto-tool-choice"
             - "--reasoning-parser"
             - "qwen3"
+            - "--default-chat-template-kwargs"
+            - '{"enable_thinking": false}'
             - "--tool-call-parser"
             - "qwen3_coder"
           env:

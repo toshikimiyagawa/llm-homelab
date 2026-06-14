@@ -30,6 +30,9 @@ def test_deployment_enables_tool_call_options():
     assert '"--enable-auto-tool-choice"' in content
     assert '"--reasoning-parser"' in content
     assert '"qwen3"' in content
+    assert '"--default-chat-template-kwargs"' in content
+    assert "enable_thinking" in content
+    assert "false" in content
     assert '"--tool-call-parser"' in content
     assert '"qwen3_coder"' in content
     assert '"hermes"' not in content
