@@ -426,6 +426,24 @@ curl http://<llm01-lan-ip>:<vllm-port>/v1/chat/completions \
   -d '{"model":"qwen3.6-35b-a3b","stream":true,"messages":[{"role":"user","content":"hi"}]}'
 ```
 
+Hermes agent などから検索 tool を使わせる場合、vLLM Deployment は
+`--enable-auto-tool-choice`、`--reasoning-parser qwen3`、
+`--tool-call-parser qwen3_coder` で起動している必要がある。検索が必要な
+質問で tool が呼ばれない場合は、まず Deployment args と vLLM Pod の
+rollout 後ログを確認する。
+
+OpenAI-compatible API で tool choice が受理されるかは、WARP 接続後に
+次のように確認する。レスポンスが 400 で
+`auto tool choice requires --enable-auto-tool-choice` を返す場合、Pod が
+新しい args で再起動していない。
+
+```bash
+curl http://<llm01-lan-ip>:<vllm-port>/v1/chat/completions \
+  -H "Authorization: Bearer dummy" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"qwen3.6-35b-a3b","tool_choice":"auto","tools":[{"type":"function","function":{"name":"web_search","description":"Search the web for current information.","parameters":{"type":"object","properties":{"query":{"type":"string"}},"required":["query"]}}}],"messages":[{"role":"user","content":"今日のニュースを検索して要約して"}]}'
+```
+
 ### 運用検証チェックリスト
 
 - [ ] W-1: Cloudflare One client が `allowed_email` で enroll できる

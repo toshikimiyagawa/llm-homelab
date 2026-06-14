@@ -55,6 +55,11 @@ k3s Deployment として `vllm` namespace に導入する。
 | モデル | `Qwen3.6-35B-A3B`（MoE 35B/3B、テキスト専用）を `/opt/models` に手動配置。native 262K コンテキスト |
 | API | OpenAI 互換（`/v1/chat/completions`, `/v1/models`） |
 
+Hermes agent など OpenAI-compatible tool calling client から利用するため、
+vLLM は `--enable-auto-tool-choice`、`--reasoning-parser qwen3`、
+`--tool-call-parser qwen3_coder` を付けて起動する。`hermes` parser は
+Qwen3.6 の agentic tool calling では使わない。
+
 アクセス URL（要 Cloudflare WARP 接続）:
 
 - API: `http://<llm01-lan-ip>:<vllm-port>/v1` または LAN 内向け reverse proxy の URL
