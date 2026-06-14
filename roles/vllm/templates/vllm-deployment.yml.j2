@@ -37,8 +37,10 @@ spec:
             - "--max-num-seqs"
             - "{{ vllm_max_num_seqs | string }}"
             - "--enable-auto-tool-choice"
+            - "--reasoning-parser"
+            - "qwen3"
             - "--tool-call-parser"
-            - "hermes"
+            - "qwen3_coder"
           env:
             - name: NVIDIA_VISIBLE_DEVICES
               value: "{{ vllm_gpu_uuid }}"

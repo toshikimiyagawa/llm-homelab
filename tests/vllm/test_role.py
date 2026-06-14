@@ -28,8 +28,11 @@ def test_deployment_uses_recreate_strategy_for_fixed_gpu():
 def test_deployment_enables_tool_call_options():
     content = DEPLOYMENT_TMPL.read_text()
     assert '"--enable-auto-tool-choice"' in content
+    assert '"--reasoning-parser"' in content
+    assert '"qwen3"' in content
     assert '"--tool-call-parser"' in content
-    assert '"hermes"' in content
+    assert '"qwen3_coder"' in content
+    assert '"hermes"' not in content
 
 
 def test_deployment_sets_max_model_len():
