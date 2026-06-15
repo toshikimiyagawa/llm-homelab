@@ -52,7 +52,7 @@ k3s Deployment として `vllm` namespace に導入する。
 |------|--------|
 | image | `vllm/vllm-openai:latest` |
 | GPU | RTX Pro 6000（UUID: `GPU-079e606a-926e-e5d4-dcd3-6322c089ef8a`） |
-| モデル | `Qwen3.6-35B-A3B`（MoE 35B/3B、テキスト専用）を `/opt/models` に手動配置。native 262K コンテキスト |
+| モデル | `Qwen3.5-122B-A10B-NVFP4`（MoE 122B/10B、NVFP4 4bit、テキスト専用）を `/opt/models` に手動配置。初期 context は 32K |
 | API | OpenAI 互換（`/v1/chat/completions`, `/v1/models`） |
 
 Hermes agent など OpenAI-compatible tool calling client から利用するため、
@@ -60,7 +60,10 @@ vLLM は `--enable-auto-tool-choice`、`--reasoning-parser qwen3`、
 `--tool-call-parser qwen3_coder` を付けて起動する。さらに
 `--default-chat-template-kwargs '{"enable_thinking": false}'` を指定し、検索
 tool などを呼ぶ場面で reasoning のみを返して tool call しない挙動を避ける。
-`hermes` parser は Qwen3.6 の agentic tool calling では使わない。
+`hermes` parser は Qwen3.5/Qwen3.6 の agentic tool calling では使わない。
+122B NVFP4 は 96GB VRAM に対して重いため、`vllm_max_model_len=32768` と
+`vllm_max_num_seqs=4` から開始し、実機で余裕が確認できた場合だけ後続 PR で
+引き上げる。
 
 アクセス URL（要 Cloudflare WARP 接続）:
 
@@ -176,7 +179,7 @@ Antec Flux Pro の温度表示は Linux ネイティブ実装として
 ローカルLLMをメインにし、必要時のみクラウドAPIを呼ぶ。
 
 ```text
-ローカルLLM (Qwen3.6 on RTX Pro 6000)
+ローカルLLM (Qwen3.5-122B-A10B-NVFP4 on RTX Pro 6000)
 ├── ローカルで完結する処理
 ├── Web検索 -> Gemini API
 └── 複雑な推論 -> Anthropic API

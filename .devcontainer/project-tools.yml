@@ -64,7 +64,7 @@ post_install:
       cat > /home/ubuntu/.config/opencode/opencode.json <<'EOF'
       {
         "$schema": "https://opencode.ai/config.json",
-        "model": "vllm/qwen3.6-35b-a3b",
+        "model": "vllm/qwen3.5-122b-a10b-nvfp4",
         "provider": {
           "vllm": {
             "npm": "@ai-sdk/openai-compatible",
@@ -74,10 +74,10 @@ post_install:
               "apiKey": "dummy"
             },
             "models": {
-              "qwen3.6-35b-a3b": {
-                "name": "Qwen3.6-35B-A3B",
+              "qwen3.5-122b-a10b-nvfp4": {
+                "name": "Qwen3.5-122B-A10B-NVFP4",
                 "limit": {
-                  "context": 131072,
+                  "context": 32768,
                   "output": 8192
                 }
               }

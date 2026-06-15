@@ -423,7 +423,7 @@ vLLM は環境の公開方法に合わせ、WARP 越しに LAN IP / port また�
 curl http://<llm01-lan-ip>:<vllm-port>/v1/chat/completions \
   -H "Authorization: Bearer dummy" \
   -H "Content-Type: application/json" \
-  -d '{"model":"qwen3.6-35b-a3b","stream":true,"messages":[{"role":"user","content":"hi"}]}'
+  -d '{"model":"qwen3.5-122b-a10b-nvfp4","stream":true,"messages":[{"role":"user","content":"hi"}]}'
 ```
 
 Hermes agent などから検索 tool を使わせる場合、vLLM Deployment は
@@ -444,7 +444,7 @@ OpenAI-compatible API で tool choice が受理されるかは、WARP 接続後�
 curl http://<llm01-lan-ip>:<vllm-port>/v1/chat/completions \
   -H "Authorization: Bearer dummy" \
   -H "Content-Type: application/json" \
-  -d '{"model":"qwen3.6-35b-a3b","tool_choice":"auto","tools":[{"type":"function","function":{"name":"web_search","description":"Search the web for current information.","parameters":{"type":"object","properties":{"query":{"type":"string"}},"required":["query"]}}}],"messages":[{"role":"user","content":"今日のニュースを検索して要約して"}]}'
+  -d '{"model":"qwen3.5-122b-a10b-nvfp4","tool_choice":"auto","tools":[{"type":"function","function":{"name":"web_search","description":"Search the web for current information.","parameters":{"type":"object","properties":{"query":{"type":"string"}},"required":["query"]}}}],"messages":[{"role":"user","content":"今日のニュースを検索して要約して"}]}'
 ```
 
 ### 運用検証チェックリスト

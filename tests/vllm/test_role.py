@@ -36,6 +36,8 @@ def test_deployment_enables_tool_call_options():
     assert '"--tool-call-parser"' in content
     assert '"qwen3_coder"' in content
     assert '"hermes"' not in content
+    assert '"--quantization"' not in content
+    assert "moe_wna16" not in content
 
 
 def test_deployment_sets_max_model_len():
@@ -45,8 +47,7 @@ def test_deployment_sets_max_model_len():
 
 
 def test_deployment_caps_max_num_seqs_for_mamba_cache():
-    # Qwen3.6-35B-A3B uses Gated DeltaNet (Mamba) blocks; max_num_seqs must not
-    # exceed available Mamba cache blocks or CUDA graph capture fails at startup.
+    # Qwen3.5-122B-A10B-NVFP4 starts with low concurrency on one 96GB GPU.
     content = DEPLOYMENT_TMPL.read_text()
     assert '"--max-num-seqs"' in content
     assert "vllm_max_num_seqs" in content
@@ -56,28 +57,27 @@ def test_default_max_num_seqs_within_mamba_block_limit():
     content = DEFAULTS.read_text()
     match = re.search(r"^vllm_max_num_seqs:\s*(\d+)", content, re.MULTILINE)
     assert match, "vllm_max_num_seqs must be set in defaults"
-    assert int(match.group(1)) <= 754
+    assert int(match.group(1)) == 4
 
 
-def test_group_vars_serves_qwen36():
+def test_group_vars_serves_qwen35_122b_nvfp4():
     content = GROUP_VARS.read_text()
-    assert "vllm_model: /models/Qwen3.6-35B-A3B" in content
-    assert "vllm_served_model_name: qwen3.6-35b-a3b" in content
+    assert "vllm_model: /models/Qwen3.5-122B-A10B-NVFP4" in content
+    assert "vllm_served_model_name: qwen3.5-122b-a10b-nvfp4" in content
 
 
-def test_default_model_dir_is_qwen36():
+def test_default_model_dir_is_qwen35_122b_nvfp4():
     content = DEFAULTS.read_text()
-    assert "vllm_model_dir: Qwen3.6-35B-A3B" in content
+    assert "vllm_model_dir: Qwen3.5-122B-A10B-NVFP4" in content
 
 
-def test_default_max_model_len_without_yarn():
+def test_default_max_model_len_is_conservative_for_122b_nvfp4():
     content = DEFAULTS.read_text()
-    # YaRN RoPE scaling is dropped: Qwen3.6-35B-A3B has a 262K native context.
     assert "yarn" not in content
     assert "vllm_rope_scaling_dict" not in content
     match = re.search(r"^vllm_max_model_len:\s*(\d+)", content, re.MULTILINE)
     assert match, "vllm_max_model_len must be set in defaults"
-    assert int(match.group(1)) > 92736
+    assert int(match.group(1)) == 32768
 
 
 def test_tasks_do_not_modify_model_config_for_yarn():
@@ -93,15 +93,16 @@ def test_deployment_is_text_only_no_multimodal_flags():
     assert "--allowed-local-media-path" not in content
 
 
-def test_software_stack_doc_reflects_qwen36():
+def test_software_stack_doc_reflects_qwen35_122b_nvfp4():
     content = SOFTWARE_STACK_DOC.read_text()
-    assert "Qwen3.6-35B-A3B" in content
+    assert "Qwen3.5-122B-A10B-NVFP4" in content
+    assert "NVFP4" in content
     assert "Qwen/Qwen3-30B-A3B" not in content
 
 
-def test_operations_doc_curl_example_uses_qwen36():
+def test_operations_doc_curl_example_uses_qwen35_122b_nvfp4():
     content = OPERATIONS_DOC.read_text()
-    assert '"model":"qwen3.6-35b-a3b"' in content
+    assert '"model":"qwen3.5-122b-a10b-nvfp4"' in content
     assert "qwen3-32b" not in content
 
 

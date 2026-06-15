@@ -58,15 +58,15 @@ def test_opencode_config_uses_singular_provider_key():
     assert config["provider"]["vllm"]["npm"] == "@ai-sdk/openai-compatible"
 
 
-def test_default_model_points_to_qwen36():
+def test_default_model_points_to_qwen35_122b_nvfp4():
     config = _opencode_config_json()
-    assert config["model"] == "vllm/qwen3.6-35b-a3b"
+    assert config["model"] == "vllm/qwen3.5-122b-a10b-nvfp4"
 
 
 def test_qwen_model_defines_context_and_output_limits():
-    model = _opencode_config_json()["provider"]["vllm"]["models"]["qwen3.6-35b-a3b"]
+    model = _opencode_config_json()["provider"]["vllm"]["models"]["qwen3.5-122b-a10b-nvfp4"]
     assert model["limit"] == {
-        "context": 131072,
+        "context": 32768,
         "output": 8192,
     }
 
