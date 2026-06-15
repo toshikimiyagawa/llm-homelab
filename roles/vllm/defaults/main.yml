@@ -9,7 +9,7 @@ vllm_domain: "vllm.{{ base_domain }}"
 vllm_gpu_memory_utilization: "0.90"
 vllm_port: 8000
 vllm_model_dir: Qwen3.5-122B-A10B-NVFP4
-# Qwen3.5-122B-A10B-NVFP4 is much larger than Qwen3.6-35B-A3B; start
-# conservatively on one RTX Pro 6000 96GB and tune upward only after rollout.
-vllm_max_model_len: 32768
+# Qwen3.5-122B-A10B-NVFP4 has enough observed KV cache headroom on one
+# RTX Pro 6000 96GB to satisfy Hermes Agent's 64K minimum context.
+vllm_max_model_len: 65536
 vllm_max_num_seqs: 4
