@@ -66,7 +66,7 @@ def test_default_model_points_to_qwen35_122b_nvfp4():
 def test_qwen_model_defines_context_and_output_limits():
     model = _opencode_config_json()["provider"]["vllm"]["models"]["qwen3.5-122b-a10b-nvfp4"]
     assert model["limit"] == {
-        "context": 32768,
+        "context": 65536,
         "output": 8192,
     }
 

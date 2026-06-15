@@ -71,13 +71,13 @@ def test_default_model_dir_is_qwen35_122b_nvfp4():
     assert "vllm_model_dir: Qwen3.5-122B-A10B-NVFP4" in content
 
 
-def test_default_max_model_len_is_conservative_for_122b_nvfp4():
+def test_default_max_model_len_satisfies_hermes_agent_minimum():
     content = DEFAULTS.read_text()
     assert "yarn" not in content
     assert "vllm_rope_scaling_dict" not in content
     match = re.search(r"^vllm_max_model_len:\s*(\d+)", content, re.MULTILINE)
     assert match, "vllm_max_model_len must be set in defaults"
-    assert int(match.group(1)) == 32768
+    assert int(match.group(1)) == 65536
 
 
 def test_tasks_do_not_modify_model_config_for_yarn():

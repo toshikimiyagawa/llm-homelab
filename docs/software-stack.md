@@ -52,7 +52,7 @@ k3s Deployment として `vllm` namespace に導入する。
 |------|--------|
 | image | `vllm/vllm-openai:latest` |
 | GPU | RTX Pro 6000（UUID: `GPU-079e606a-926e-e5d4-dcd3-6322c089ef8a`） |
-| モデル | `Qwen3.5-122B-A10B-NVFP4`（MoE 122B/10B、NVFP4 4bit、テキスト専用）を `/opt/models` に手動配置。初期 context は 32K |
+| モデル | `Qwen3.5-122B-A10B-NVFP4`（MoE 122B/10B、NVFP4 4bit、テキスト専用）を `/opt/models` に手動配置。context は 65K |
 | API | OpenAI 互換（`/v1/chat/completions`, `/v1/models`） |
 
 Hermes agent など OpenAI-compatible tool calling client から利用するため、
@@ -61,9 +61,9 @@ vLLM は `--enable-auto-tool-choice`、`--reasoning-parser qwen3`、
 `--default-chat-template-kwargs '{"enable_thinking": false}'` を指定し、検索
 tool などを呼ぶ場面で reasoning のみを返して tool call しない挙動を避ける。
 `hermes` parser は Qwen3.5/Qwen3.6 の agentic tool calling では使わない。
-122B NVFP4 は 96GB VRAM に対して重いため、`vllm_max_model_len=32768` と
-`vllm_max_num_seqs=4` から開始し、実機で余裕が確認できた場合だけ後続 PR で
-引き上げる。
+122B NVFP4 は 96GB VRAM に対して重いため、`vllm_max_model_len=65536` と
+`vllm_max_num_seqs=4` で運用する。32K 起動時の実機ログでは GPU KV cache が
+422,534 tokens 確保できており、Hermes Agent の 64K 要件を満たす余裕がある。
 
 アクセス URL（要 Cloudflare WARP 接続）:
 
